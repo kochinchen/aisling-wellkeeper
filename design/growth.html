@@ -84,6 +84,8 @@ input[type=range], input[type=checkbox] { accent-color: var(--accent); }
 }
 .settings .grp { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .settings label { font-weight: 700; font-size: 14px; }
+/* 手機上不固定在頂端（設計者 2026-11-22：固定會佔掉約五分之一的畫面） */
+@media (max-width: 640px) { .settings { position: static; } }
 #level { width: 160px; }
 .pill { font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: 4px; background: var(--chip-bg); color: var(--chip-ink); }
 .pill.soft { background: var(--soft); color: var(--ink-2); }
@@ -95,7 +97,7 @@ table { border-collapse: collapse; width: 100%; font-size: 14px; }
 th, td { padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; vertical-align: top; }
 th { font-size: 12px; font-weight: 700; color: var(--muted); background: var(--soft); position: sticky; top: 0; z-index: 1; }
 td.n, th.n { text-align: right; }
-td.wrap { white-space: normal; }
+td.wrapcell { white-space: normal; min-width: 10em; }
 tr.mile td { background: var(--warm); }
 tr.cur td { outline: 2px solid var(--accent); outline-offset: -2px; }
 tr:last-child td { border-bottom: none; }
@@ -783,7 +785,7 @@ footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line);
       return `<tr><td class="name"><b>${esc(s.name)}</b></td><td class="n">${r}</td><td class="n">${f1(d.mana)}</td>
         <td class="n">${m && m.damage ? '+' + pct(m.damage) : '—'}</td>
         <td class="n">${d.lines.map((l) => `${Math.max(1, r0(l.lo))}–${Math.max(1, r0(l.hi))}${l.hits > 1 ? ' ×' + l.hits : ''}`).join('<br>')}</td>
-        <td class="n"><b>${r0(d.perCast)}</b></td><td class="wrap small">${other.join('、') || '—'}</td></tr>`;
+        <td class="n"><b>${r0(d.perCast)}</b></td><td class="wrapcell small">${other.join('、') || '—'}</td></tr>`;
     }).join('');
   }
 
@@ -813,8 +815,8 @@ footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line);
         const [label, u] = MOD_LABEL[x.type] || [x.type, 'pct'];
         return `${STEP[x.target]}${label}${u === 'flag' ? '' : ' ' + fmtMod(x.value, u)}${x.when ? '（有條件）' : ''}`;
       }).join('、');
-      return `<tr><td class="n">${r.tier}</td><td class="wrap"><b>${esc(r.name)}</b>${r.description ? `<br><span class="small muted">${esc(r.description)}</span>` : ''}</td>
-        <td class="wrap small">${cond}</td><td class="wrap small">${mods}</td></tr>`;
+      return `<tr><td class="n">${r.tier}</td><td class="wrapcell"><b>${esc(r.name)}</b>${r.description ? `<br><span class="small muted">${esc(r.description)}</span>` : ''}</td>
+        <td class="wrapcell small">${cond}</td><td class="wrapcell small">${mods}</td></tr>`;
     }).join('');
   }
 

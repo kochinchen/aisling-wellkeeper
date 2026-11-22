@@ -2,7 +2,9 @@
 
 ![Aisling - Wellkeeper](cover.jpg)
 
-**▶ 線上遊玩：https://kochinchen.github.io/aisling-wellkeeper/**（用 Chrome 或 Edge 開啟，不必安裝）
+### [▶ 線上遊玩](https://kochinchen.github.io/aisling-wellkeeper/)
+
+https://kochinchen.github.io/aisling-wellkeeper/　·　用 Chrome 或 Edge 開啟，不必安裝
 
 ## 遊戲介紹
 

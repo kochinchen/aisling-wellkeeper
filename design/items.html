@@ -68,7 +68,7 @@ table { border-collapse: collapse; width: 100%; font-size: 14px; }
 th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; vertical-align: top; }
 th { font-size: 12px; font-weight: 700; color: var(--muted); background: var(--soft); position: sticky; top: 0; z-index: 1; }
 td.n, th.n { text-align: right; }
-td.wrap { white-space: normal; }
+td.wrapcell { white-space: normal; min-width: 10em; }
 td.rowh { font-weight: 700; color: var(--ink-2); background: var(--soft); position: sticky; left: 0; }
 tr:last-child td { border-bottom: none; }
 th.rar { font-size: 14px; font-weight: 900; font-family: "Noto Serif TC", serif; }
@@ -498,7 +498,7 @@ const G = {"rarities":[{"id":"normal","label":"普通","color":"#e8e2d4","affixe
     ['光芒分數', (r) => String(aura[r.id])],
   ];
   $('rarityTable').innerHTML = `<thead><tr>${rarHead()}</tr></thead><tbody>${rows.map(([k, f]) =>
-    `<tr><td class="rowh">${k}</td>${R.map((r) => `<td class="wrap">${f(r)}</td>`).join('')}</tr>`).join('')}</tbody>`;
+    `<tr><td class="rowh">${k}</td>${R.map((r) => `<td class="wrapcell">${f(r)}</td>`).join('')}</tr>`).join('')}</tbody>`;
 
   // ── 掉落機率 ──
   const LOOT_LABEL = { 'loot.champion_chest': '首領寶箱', 'loot.skeleton': '一般怪物', 'loot.elite': '精英怪（額外）/ 中途小王', 'loot.boss': '樓層魔王', 'loot.chest': '寶箱', 'loot.final_chest': '第 35 層寶箱', 'loot.brute': '巨獸系怪物' };
@@ -568,7 +568,7 @@ const G = {"rarities":[{"id":"normal","label":"普通","color":"#e8e2d4","affixe
     const ok = (a) => slotFilter === 'all' || !a.slots || a.slots.includes(slotFilter);
     const head = `<thead><tr><th>名稱</th><th>屬性</th><th class="n">T1（1～7 層）</th><th class="n">T5（32 層以上）</th><th>可出現部位</th><th class="n">最低物品等級</th><th class="n">權重</th></tr></thead>`;
     const row = (a) => `<tr><td class="cell-name">${esc(a.name)}</td><td>${esc(a.statLabel)}</td><td class="n">${a.t1}</td><td class="n">${a.t5}</td>
-      <td class="wrap small">${slotText(a)}</td><td class="n">${a.minItemLevel}</td><td class="n">${a.weight}</td></tr>`;
+      <td class="wrapcell small">${slotText(a)}</td><td class="n">${a.minItemLevel}</td><td class="n">${a.weight}</td></tr>`;
     const items = G.affixes.filter((a) => a.kind === 'item' && ok(a));
     const strong = G.affixes.filter((a) => a.kind === 'strong' && ok(a));
     $('affixTable').innerHTML = head + `<tbody>${items.map(row).join('') || '<tr><td colspan="7" class="muted">沒有</td></tr>'}</tbody>`;

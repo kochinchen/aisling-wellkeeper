@@ -2,9 +2,9 @@
 
 ![Aisling - Wellkeeper](cover.jpg)
 
-### [▶ 線上遊玩](https://kochinchen.github.io/aisling-wellkeeper/)
+### [▶ 線上遊玩](https://aisling.billchen-kc-viz.com/)
 
-https://kochinchen.github.io/aisling-wellkeeper/　·　用 Chrome 或 Edge 開啟，不必安裝
+https://aisling.billchen-kc-viz.com/　·　用 Chrome 或 Edge 開啟，不必安裝
 
 ## 遊戲介紹
 
@@ -18,6 +18,7 @@ https://kochinchen.github.io/aisling-wellkeeper/　·　用 Chrome 或 Edge 開�
 - **連段與組合技**：左鍵移動與攻擊，右鍵施放連段。招式排列的順序不同，會觸發不同的組合技，同一套技能也能打出不一樣的節奏。
 - **六種稀有度的裝備**：白、藍、黃、紫、橘（傳奇）、紅（神話），每件裝備的詞綴都是隨機的，傳奇與神話還有專屬的特殊效果。
 - **真正的管弦配樂**：用真實樂器的取樣演奏，越往下越悲壯；血量低時會加入緊張的小提琴，每個魔王都有自己的曲子。
+- **冒險統計與里程碑**：角色視窗的「統計」分頁畫出你的流派雷達圖（技能與裝備分開看）、傷害分布、每層的死亡與耗時；50 項里程碑達成就給自由點數。
 - **《井誌》**：散落在各層的遺物、魔王倒下時留下的魂魄、寶箱裡的挑戰者筆記，合成一本 69 頁的書（遊戲中按 Y），每收集四分之一還有獎勵。據說還有第 70 頁……
 
 ## 遊戲賣點
@@ -63,14 +64,19 @@ https://kochinchen.github.io/aisling-wellkeeper/　·　用 Chrome 或 Edge 開�
 
 ## 遊戲畫面
 
-![第 6 層](scene.jpg)
+![第 1 層：井邊的村落、商人與共用倉庫](scene.jpg)
 
 ![戰鬥畫面](battle.jpg)
 
+![遊戲介面：上方的功能按鈕列、商人與背包，下方是血球、魔力球與技能列](interface.jpg)
+
+![角色視窗的統計分頁：流派雷達圖與傷害分布](stats.jpg)
+
 ## 操作
 
-左鍵移動 / 攻擊、右鍵施放連段、Q / W / E 切換連段、Space 喝藥水、
-I 背包、C 角色、T 技能、K 怪物圖鑑、O 裝備圖鑑、Tab 地圖、Esc 選單（選單裡的「操作說明」有完整列表）。
+左鍵移動 / 攻擊、右鍵施放連段、Q / W / E / R 切換連段、A / S / D 切換輔助組合、Space 喝藥水、
+I 背包、C 角色、T 技能、U 任務本、Y 井誌、K 怪物圖鑑、O 裝備圖鑑、Tab 地圖、Esc 選單（選單裡的「操作說明」有完整列表）。
+這些功能也排在畫面正上方的按鈕列，按鈕上標著熱鍵。
 
 遊戲會自動存檔在這個瀏覽器裡；換電腦時用選單的「匯出存檔」、到新的地方再「匯入存檔」。
 
@@ -78,11 +84,11 @@ I 背包、C 角色、T 技能、K 怪物圖鑑、O 裝備圖鑑、Tab 地圖、
 
 | 文件 | 內容 |
 | --- | --- |
-| [▶ 線上遊玩](https://kochinchen.github.io/aisling-wellkeeper/) | 遊戲本體 |
-| [怪物圖鑑](https://kochinchen.github.io/aisling-wellkeeper/design/codex.html) | 所有怪物的縮圖、各樓層的怪物數值、魔王與隱藏魔王的數值與能力 |
-| [裝備圖鑑](https://kochinchen.github.io/aisling-wellkeeper/design/items.html) | 稀有度、掉落機率、裝備基底、詞綴、傳奇與神話裝備、熔核、地牢遺物 |
-| [角色成長模擬](https://kochinchen.github.io/aisling-wellkeeper/design/growth.html) | 成長表、技能點模擬器、Combo 測試、融合試算 |
-| [組合技圖鑑](https://kochinchen.github.io/aisling-wellkeeper/design/combos.html) | 七組連段的組合技規則與所有會觸發的排列 |
-| [井誌（小說）](https://kochinchen.github.io/aisling-wellkeeper/design/novel.html) | 完整小說：年老的主角一層一層講給孩子聽 |
+| [▶ 線上遊玩](https://aisling.billchen-kc-viz.com/) | 遊戲本體 |
+| [怪物圖鑑](https://aisling.billchen-kc-viz.com/design/codex.html) | 所有怪物的縮圖、各樓層的怪物數值、魔王與隱藏魔王的數值與能力 |
+| [裝備圖鑑](https://aisling.billchen-kc-viz.com/design/items.html) | 稀有度、掉落機率、裝備基底、詞綴、傳奇與神話裝備、熔核、地牢遺物 |
+| [角色成長模擬](https://aisling.billchen-kc-viz.com/design/growth.html) | 成長表、技能點模擬器、Combo 測試、融合試算 |
+| [組合技圖鑑](https://aisling.billchen-kc-viz.com/design/combos.html) | Q～R 四組連段的組合技規則與所有會觸發的排列 |
+| [井誌（小說）](https://aisling.billchen-kc-viz.com/design/novel.html) | 完整小說：年老的主角一層一層講給孩子聽 |
 
 這裡只放打包好的遊戲與上面這些文件。

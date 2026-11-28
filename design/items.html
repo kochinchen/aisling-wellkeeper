@@ -133,12 +133,150 @@ ul.rules { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
 .relic-talk p { margin: 4px 0 0; }
 </style>
 
+<style id="armory-theme">
+/* 裝備圖鑑的新外觀（設計者 2026-11-28）：和公開網站、怪物圖鑑同一套黑金色系，主色古金色
+   （設計者：全站主色維持古金色，和稀有度的黃、橘色階差很多，不用怕撞色）。稀有度顏色本身不改 */
+:root, :root[data-theme="light"], :root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #15110C; --panel: #1D1812; --soft: #1A1611; --warm: #221D17;
+  --ink: #DED1BA; --ink-2: #D9B474; --muted: #A38B66; --line: #493A28; --accent: #D9B474;
+  --verd: #D9B474; --verd-dim: #3A2C1B;
+  --r-normal: #e8e2d4; --r-magic: #8aa2ff; --r-rare: #f2d24b; --r-epic: #c298ff; --r-legendary: #ff9a3c; --r-mythic: #ff5c5c;
+}
+html { background: var(--bg); }
+body {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .55 0 0 0 0 .45 0 0 0 0 .32 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    var(--bg) !important;
+  color: var(--ink) !important;
+  font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+}
+.wrap { max-width: 1200px; padding: 14px 16px 64px; }
+h1, h2 { color: var(--verd); font-weight: 700; }
+h2 { font-size: clamp(22px, 3vw, 28px); }
+h3 { color: var(--verd); font-family: "Noto Serif TC", serif; font-weight: 700; }
+a { color: var(--verd); }
+/* 資料來源（程式檔名）是開發用的，公開頁面不顯示 */
+.sec-head .eyebrow, header > .eyebrow { display: none; }
+.sec-head p { color: var(--muted); }
+.muted, .small.muted { color: var(--muted); }
+
+/* 頂端與標題（同怪物圖鑑的版面） */
+.a-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 14px; color: var(--muted); }
+.a-top a { color: var(--muted); text-decoration: none; }
+.a-top a:hover { color: var(--verd); }
+.a-hero { text-align: center; padding: 34px 0 26px; border-bottom: 1px solid var(--line); }
+.a-hero svg { width: 46px; height: 46px; fill: none; stroke: var(--verd); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.a-hero h1 { margin: 8px 0 0; font: 700 clamp(34px, 6vw, 52px)/1.15 "Noto Serif TC", serif; letter-spacing: .06em; }
+.a-hero .en { margin: 10px 0 0; font: 500 15px/1 "Cinzel", Georgia, serif; letter-spacing: .42em; color: var(--muted); }
+.a-hero p { max-width: none; }
+.a-hero p.lead { max-width: 44em; margin: 16px auto 0; color: var(--ink); font-size: 15px; }
+header { padding-bottom: 0; gap: 0; }
+header nav.toc { display: none; }
+
+/* 分頁：一次看一段 */
+.a-tabs { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 8px; margin: 24px 0 8px; }
+.a-tab { display: grid; justify-items: center; gap: 6px; padding: 12px 6px 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; color: var(--muted); cursor: pointer; text-align: center; font: 500 14px/1.3 "Noto Serif TC", serif; }
+.a-tab svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.a-tab span { color: var(--ink); }
+.a-tab:hover { border-color: var(--muted); }
+.a-tab[aria-selected="true"] { background: var(--verd-dim); border-color: var(--verd); color: var(--verd); }
+.a-tab[aria-selected="true"] span { color: #F1DEB0; }
+/* 捲過分頁列之後，頂端滑進一條精簡分頁列（只有名稱）；只用位移與透明度動畫，不改版面、不用毛玻璃（設計者 2026-11-28：捲動要順） */
+.a-sentinel { height: 1px; margin-top: -1px; }
+.a-fixed { position: fixed; z-index: 30; left: 0; right: 0; top: 0; background: #15110C; border-bottom: 1px solid var(--line); box-shadow: 0 8px 18px rgb(0 0 0 / 45%);
+  transform: translateY(-110%); visibility: hidden; transition: transform 220ms ease, visibility 0s linear 220ms; will-change: transform; }
+.a-fixed.on { transform: none; visibility: visible; transition: transform 220ms ease; }
+.a-fixed-in { max-width: 1200px; margin: 0 auto; padding: 6px 16px; display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 6px; }
+.a-fixed .a-tab { padding: 7px 4px; gap: 0; }
+.a-fixed .a-more { display: none; }
+/* 手機：精簡列只留目前這一頁＋「切換 ▾」，展開時蓋在內容上（不推動內容） */
+@media (max-width: 640px) {
+  .a-fixed-in { grid-template-columns: minmax(0, 1fr) auto; }
+  .a-fixed:not(.open) .a-tab:not([aria-selected="true"]) { display: none; }
+  .a-fixed .a-more { display: block; padding: 0 14px; font-size: 14px; color: var(--verd); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; }
+  .a-fixed.open .a-fixed-in { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .a-fixed.open .a-more { grid-column: 1 / -1; padding: 6px; }
+}
+@media (prefers-reduced-motion: reduce) { .a-fixed, .a-fixed.on { transition: none; } }
+section { padding-top: 26px; }
+section.a-off { display: none !important; }
+.a-pager { display: flex; justify-content: space-between; gap: 12px; margin-top: 30px; padding-top: 16px; border-top: 1px solid var(--line); }
+.a-pager button { padding: 8px 14px; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; font-size: 14px; }
+.a-pager button:hover { border-color: var(--verd); color: var(--verd); }
+.a-pager button[hidden] { visibility: hidden; display: inline-block !important; }
+
+/* 表格、卡片、按鈕：深色、灰色線條 */
+.tbl { border-color: var(--line); border-radius: 6px; background: var(--panel); }
+/* 不要表格裡面另外捲動（設計者 2026-11-28）：一頁只放一段，大表整張展開，跟著整頁捲；太寬時才左右捲 */
+.tbl, .tbl.tall { max-height: none !important; overflow-y: visible; }
+th { background: #18140F; color: var(--muted); border-bottom-color: var(--line); }
+td { border-bottom-color: var(--line); }
+tbody tr:hover td { background: #221D17; }
+td.rowh { background: #18140F; color: var(--verd); }
+.formula { background: #18140F; border: 1px solid var(--line); color: var(--ink); }
+.u { background: var(--panel); border-color: var(--line); border-radius: 6px; }
+.u-role { color: var(--verd); }
+.u li.main::before { color: var(--verd); }
+.u li.strong::before { color: var(--verd); }
+.u .lore { border-top-color: var(--line); }
+button, select { color: var(--ink); background: var(--panel); border-color: var(--line); border-radius: 4px; padding: 5px 12px; }
+button:hover { border-color: var(--muted); }
+button[aria-pressed="true"] { background: var(--verd-dim); color: #F1DEB0; border-color: var(--verd); }
+.legend { color: var(--muted); }
+.relic-page { background: var(--panel); border-color: var(--line); }
+.sw { border-color: var(--line); }
+footer { border-top-color: var(--line); color: var(--muted); text-align: center; }
+/* 分段的呈現（設計者 2026-11-28：改善呈現方式） */
+/* 小標題：左邊一條古金色線，和下面的內容分開 */
+section h3 { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-size: 17px; }
+section h3::before { content: ""; width: 3px; height: 1em; background: var(--verd); border-radius: 2px; }
+/* 「賣價、拆解、飛昇、光芒」：主題很多，改成一欄排滿寬度，表格不再被擠到要橫向捲動 */
+#economy .two { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+#economy .two > div { gap: 10px !important; padding: 18px 20px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; }
+#economy .formula { white-space: normal; }
+/* 稀有度規則：六欄要一次看完，文字可以換行（不要橫向捲動） */
+#rarityTable { table-layout: fixed; }
+#rarityTable th, #rarityTable td { white-space: normal; }
+#rarityTable td.rowh, #rarityTable tr > :first-child { width: 15em; }
+/* 說明清單（物品等級與詞綴階級）改成卡片 */
+ul.notes, ul.rules { list-style: none; padding: 0; gap: 8px; }
+ul.notes li, ul.rules li { padding: 10px 14px; background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--verd); border-radius: 4px; }
+.sec-head p { max-width: 60em; line-height: 1.8; }
+.filters { padding: 12px 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; }
+/* 不對讀者說明的計算邏輯（apply-theme.py 標上 a-calc） */
+.a-calc { display: none !important; }
+/* 減少左右捲動（設計者 2026-11-28）：公式與文字欄可以換行，只有數字不換行；兩欄的段落在不夠寬時改成上下排 */
+.formula { white-space: normal !important; overflow-wrap: anywhere; }
+th, td { white-space: normal; }
+td.n, th.n, td.num { white-space: nowrap; }
+th, td { padding: 7px 9px; }
+@media (max-width: 1100px) { .two { grid-template-columns: minmax(0, 1fr) !important; } }
+/* 手機：表格的每一列變成一張卡片，欄名寫在每個值的左邊（data-label 由分頁腳本加上），只上下捲 */
+@media (max-width: 640px) {
+  .tbl { overflow: visible; border: 0; background: none; }
+  .tbl table, .tbl tbody, .tbl tr, .tbl td { display: block; width: auto !important; }
+  .tbl thead { display: none; }
+  .tbl tr { margin-bottom: 10px; padding: 8px 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; }
+  .tbl td { display: grid; grid-template-columns: minmax(5.5em, 38%) minmax(0, 1fr); gap: 10px; padding: 5px 0; border-bottom: 1px dashed var(--line); text-align: left !important; white-space: normal !important; position: static !important; background: none !important; }
+  .tbl td:last-child { border-bottom: 0; }
+  .tbl td::before { content: attr(data-label); color: var(--muted); font-size: 12px; font-weight: 500; }
+  .tbl td.cardhead { display: block; padding: 2px 0 8px; font-weight: 700; color: var(--verd); border-bottom: 1px solid var(--line); }
+  .tbl td.cardhead::before { content: none; }
+  .tbl td:empty { display: none; }
+}
+@media (max-width: 640px) {
+  .a-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .a-tab { font-size: 13px; padding: 10px 4px 8px; }
+}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500&family=Noto+Serif+TC:wght@500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 <div class="wrap">
   <header>
-    <div class="eyebrow">Aisling - Wellkeeper · 資料表 · 取自 src/data/items.ts、affixes.ts、legendaries.ts、lootTables.ts、balance.ts</div>
-    <h1>裝備圖鑑：白、藍、黃、紫、橘、紅</h1>
-    <p>整理六種稀有度的規則、各來源的掉落機率、8 階裝備基底（含盾牌）、<span id="nAffix">57</span> 條詞綴，以及 <span id="nLeg"></span> 件傳奇與 <span id="nMyth"></span> 件神話裝備（都附上遊戲裡的圖示）。</p>
+    <div class="a-top"><span>Aisling — Wellkeeper</span><a href="./">返回主網站 ›</a></div>
+    <div class="a-hero"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l9.5 9.5M4 4h3.5L17 13.5M4 4v3.5L13.5 17"/><path d="M20 4l-6 6M20 4h-3.5l-3 3M20 4v3.5l-3 3"/><path d="M12 16l4 4M16 12l4 4M14.5 18.5l4-4M6 18l3-3M5 15l4 4"/></svg><h1>裝備圖鑑</h1><p class="en">ARMORY</p><p class="lead">整理六種稀有度的規則、各來源的掉落機率、8 階裝備基底（含盾牌）、<span id="nAffix">57</span> 條詞綴，以及 <span id="nLeg"></span> 件傳奇與 <span id="nMyth"></span> 件神話裝備（都附上遊戲裡的圖示）。</p></div>
     <nav class="toc"><a href="#rarity">稀有度規則</a><a href="#drops">掉落機率</a><a href="#tiers">物品等級與詞綴階級</a><a href="#bases">裝備基底</a><a href="#affixes">詞綴</a><a href="#uniques">傳奇與神話</a><a href="#economy">賣價、拆解、飛昇、光芒</a><a href="#relics">地牢遺物</a></nav>
+    <nav class="a-tabs" id="aTabs" role="tablist" aria-label="分頁"></nav>
   </header>
 
   <section id="rarity">
@@ -719,6 +857,125 @@ const G = {"rarities":[{"id":"normal","label":"普通","color":"#e8e2d4","affixe
   // 範例
   $('exampleTable').innerHTML = `<thead><tr><th>投入</th><th>熔核</th><th class="n">核階</th><th>核色</th><th class="n">條數</th><th class="n">印記機率</th><th class="n">金幣 / 精華</th></tr></thead><tbody>${C.examples.map((e) =>
     `<tr><td class="small">${e.label}</td><td><span class="core-name">${img(gem(e.types, e.tier, e.rarity, e.element ?? undefined, false), 28)}${e.core}${e.pure ? '・純核' : ''}</span></td><td class="n">T${e.tier}</td><td class="rar r-${e.rarity}">${SHORT[e.rarity]}</td><td class="n">${e.lines}</td><td class="n">${e.brand ? e.brand + '%' : '—'}</td><td class="n">${e.gold.toLocaleString()} / ${e.essenceText}</td></tr>`).join('')}</tbody>`;
+})();
+</script>
+<script id="armory-tabs">
+// 裝備圖鑑的分頁（設計者 2026-11-28）：每一段一個分頁，網址 #rarity、#drops… 直接打開那一頁；頁尾有上一頁、下一頁
+(() => {
+  const ICON = {
+    rarity: '<path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.5 6.7 19.4l1.2-6L3.4 9.3l6-.7Z"/>',
+    drops: '<path d="M12 3s6 6.4 6 11a6 6 0 0 1-12 0c0-4.6 6-11 6-11Z"/>',
+    tiers: '<path d="M4 20h16M6 16h12M8 12h8M10 8h4M11 4h2"/>',
+    bases: '<path d="M14.5 4l5.5 5.5-9 9H5.5V13Z"/><path d="M12 6.5l5.5 5.5"/>',
+    affixes: '<path d="M5 5h14v14H5Z"/><path d="M9 9h6M9 12h6M9 15h4"/>',
+    uniques: '<path d="M12 2l3 6 6.5 1-4.7 4.6 1.1 6.5L12 17l-5.9 3.1 1.1-6.5L2.5 9l6.5-1Z"/><circle cx="12" cy="11.5" r="2"/>',
+    cores: '<path d="M12 3l7 4.5v9L12 21l-7-4.5v-9Z"/><path d="M12 3v18M5 7.5l14 9M19 7.5l-14 9"/>',
+    economy: '<circle cx="12" cy="12" r="8"/><path d="M14.5 9.5c-.6-.9-1.5-1.3-2.5-1.3-1.5 0-2.5.8-2.5 1.9 0 2.6 5 1.4 5 4 0 1.1-1 1.9-2.5 1.9-1.1 0-2-.4-2.6-1.3M12 6.5v1.7M12 15.8v1.7"/>',
+    relics: '<path d="M8 3h8l2 5-6 13L6 8Z"/><path d="M6 8h12M10 3l-1 5 3 13M14 3l1 5-3 13"/>',
+  };
+  const NAME = { cores: '熔核' };
+  const toc = Object.fromEntries([...document.querySelectorAll('nav.toc a')].map((a) => [a.getAttribute('href').slice(1), a.textContent]));
+  const sections = [...document.querySelectorAll('.wrap > section[id]')];
+  const bar = document.getElementById('aTabs');
+  bar.innerHTML = sections.map((s) => '<button class="a-tab" role="tab" data-id="' + s.id + '"><svg viewBox="0 0 24 24" aria-hidden="true">' + (ICON[s.id] || ICON.affixes) + '</svg><span>' + (toc[s.id] || NAME[s.id] || s.querySelector('h2')?.textContent || s.id) + '</span></button>').join('');
+  // 分頁列留在原位；捲過它之後，畫面頂端滑進一條精簡分頁列（只有名稱，position: fixed），捲回來時再滑出去。
+  // 全程不改動版面（設計者 2026-11-28：sticky 縮放會讓捲動卡頓）。精簡列與原本那排的按鈕共用同一個點擊處理
+  const header = document.querySelector('.wrap > header');
+  header.after(bar);
+  const sentinel = document.createElement('div');
+  sentinel.className = 'a-sentinel';
+  bar.after(sentinel);
+  const fixed = document.createElement('nav');
+  fixed.className = 'a-fixed';
+  fixed.setAttribute('aria-label', '分頁');
+  fixed.innerHTML = '<div class="a-fixed-in">' + sections.map((s) => '<button class="a-tab" data-id="' + s.id + '">' + bar.querySelector('[data-id="' + s.id + '"] span').outerHTML + '</button>').join('') + '<button type="button" class="a-more">切換 ▾</button></div>';
+  document.body.append(fixed);
+  const more = fixed.querySelector('.a-more');
+  const closeMore = () => { fixed.classList.remove('open'); more.textContent = '切換 ▾'; };
+  more.addEventListener('click', () => { const o = fixed.classList.toggle('open'); more.textContent = o ? '收起 ▴' : '切換 ▾'; });
+  new IntersectionObserver(([e]) => { const on = !e.isIntersecting && e.boundingClientRect.top < 0; fixed.classList.toggle('on', on); if (!on) closeMore(); }).observe(sentinel);
+  const pager = document.createElement('div');
+  pager.className = 'a-pager';
+  pager.innerHTML = '<button type="button" id="aPrev"></button><button type="button" id="aNext"></button>';
+  document.querySelector('.wrap > footer').before(pager);
+  const ids = sections.map((s) => s.id);
+  const label = (id) => bar.querySelector('[data-id="' + id + '"] span').textContent;
+  function show(id, scroll) {
+    if (!ids.includes(id)) id = ids[0];
+    sections.forEach((s) => s.classList.toggle('a-off', s.id !== id));
+    document.querySelectorAll('.a-tab').forEach((t) => t.setAttribute('aria-selected', String(t.dataset.id === id)));
+    const i = ids.indexOf(id);
+    const prev = document.getElementById('aPrev'), next = document.getElementById('aNext');
+    prev.hidden = i === 0; next.hidden = i === ids.length - 1;
+    if (i > 0) { prev.textContent = '‹ ' + label(ids[i - 1]); prev.onclick = () => go(ids[i - 1]); }
+    if (i < ids.length - 1) { next.textContent = label(ids[i + 1]) + ' ›'; next.onclick = () => go(ids[i + 1]); }
+    // 換頁時：已經捲過分頁列的話，捲回原本那排分頁列（完整的分頁在最上面，下面接著新的一段）
+    if (scroll && fixed.classList.contains('on')) bar.scrollIntoView({ block: 'start' });
+  }
+  function go(id) { closeMore();
+    if (location.hash !== '#' + id) history.pushState(null, '', '#' + id); show(id, true); }
+  [bar, fixed].forEach((el) => el.addEventListener('click', (e) => { const t = e.target.closest('.a-tab'); if (t) go(t.dataset.id); }));
+  // 頁面裡連到其他段落的連結（#cores 之類）也切換分頁
+  document.addEventListener('click', (e) => { const a = e.target.closest('a[href^="#"]'); if (a && ids.includes(a.getAttribute('href').slice(1))) { e.preventDefault(); go(a.getAttribute('href').slice(1)); } });
+  // 不對讀者說明詳細的計算邏輯（設計者 2026-11-28）：公式、權重與倍率的換算、試算範例、開發紀錄藏起來（原始內容保留在檔案裡）；
+  // 規則說明與表格保留。小標題底下的內容全藏起來時，小標題也一起藏
+  const CALC = ['.formula', '#drops p.small.muted', '#tiers ul.notes', '#colorNote', '#coreNote', '#sellNote', '#rerollNote'];
+  const hideCalc = () => {
+    document.querySelectorAll(CALC.join(',')).forEach((e) => e.classList.add('a-calc'));
+    // 段落開頭的介紹、可以鑲的部位、一鍵賣出的說明是規則，不算計算邏輯
+    const KEEP = (e) => e.closest('.sec-head') || e.id === 'socketNote' || /^\s*商人可以一鍵賣出/.test(e.textContent);
+    document.querySelectorAll('.wrap > section p, .wrap > section li').forEach((e) => {
+      if (KEEP(e)) return;
+      const t = e.textContent;
+      if ((/[=＝]/.test(t) && /[×÷Σ]/.test(t)) || /設計者 20\d\d|^\s*v0\.\d|^\s*金幣尺度|累積取得機率|\.ts[）)；]|src\//.test(t)) e.classList.add('a-calc');
+    });
+    // 開發註記不給讀者看：「（商人「灌注」分頁，設計者 2026-11-21）」這類括號整段拿掉
+    const walker = document.createTreeWalker(document.querySelector('.wrap'), NodeFilter.SHOW_TEXT);
+    for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+      if (n.parentElement.closest('script, style')) continue;
+      const t = n.textContent.replace(/[（(][^（）()]*(設計者|20\d\d-\d\d-\d\d)[^（）()]*[）)]/g, '');
+      if (t !== n.textContent) n.textContent = t;
+    }
+    // 小標題括號裡的計算細節也拿掉（「由遊戲的融合判定算出」「同一格兩條時擲骰選一條」）
+    document.querySelectorAll('.wrap > section h3').forEach((h) => {
+      for (const n of h.childNodes) if (n.nodeType === 3) n.textContent = n.textContent.replace(/[（(][^（）()]*(算出|判定|擲骰|範圍)[^（）()]*[）)]/g, '');
+    });
+    // 裝備基底的介紹：原文有版本與改版歷史（v0.4.0、V1.0、已拿掉的加減分），公開頁換成給玩家看的版本
+    const baseIntro = document.querySelector('#bases .sec-head p');
+    if (baseIntro && /v0\.\d|V1\.0|已拿掉/.test(baseIntro.textContent)) baseIntro.textContent =
+      '武器與防具分 8 階，越高階數值越高：武器的數字是基礎傷害，防具是基礎防禦。每種武器另有內建加成（下面這一行），不隨階級變動；武器種類也決定能用哪些技能。劍、斧、弓本身沒有法術強度，可以靠「武器灌注」從法杖取得。';
+    // 遺物怎麼拿到：只說靠打怪取得，不寫各怪物的掉落率與樓層區間（設計者 2026-11-28）
+    document.querySelectorAll('#relics li').forEach((li) => {
+      if (/^\s*20 件都靠打怪掉落/.test(li.textContent) && !li.dataset.short) { li.dataset.short = '1'; li.innerHTML = '<b>20 件都靠打怪掉落。</b>'; }
+    });
+    document.querySelectorAll('.wrap > section h3').forEach((h) => {
+      const sib = [];
+      for (let n = h.nextElementSibling; n && n.tagName !== 'H3'; n = n.nextElementSibling) sib.push(n);
+      if (sib.length && sib.every((n) => n.classList.contains('a-calc'))) h.classList.add('a-calc');
+    });
+  };
+  hideCalc();
+  // 手機的卡片表格：每一格加上欄名（data-label）；第一欄當卡片標題。表格會被篩選重畫，所以有變動就重新標
+  const labelCells = (table) => {
+    const head = table.tHead ? table.tHead.rows[table.tHead.rows.length - 1] : null;
+    if (!head) return;
+    const names = [];
+    for (const th of head.cells) for (let k = 0; k < (th.colSpan || 1); k++) names.push(th.textContent.trim());
+    for (const tr of table.tBodies[0]?.rows ?? []) {
+      let col = 0;
+      [...tr.cells].forEach((td, i) => {
+        if (!td.hasAttribute('data-label')) td.setAttribute('data-label', names[col] || '');
+        if (i === 0) td.classList.add('cardhead');
+        col += td.colSpan || 1;
+      });
+    }
+  };
+  const labelAll = () => document.querySelectorAll(".tbl table").forEach(labelCells);
+  labelAll();
+  new MutationObserver(() => { clearTimeout(window.__lbl); window.__lbl = setTimeout(labelAll, 50); }).observe(document.querySelector('.wrap'), { childList: true, subtree: true });
+  addEventListener('popstate', () => show(location.hash.slice(1), false));
+  show(location.hash.slice(1), false);
+  if (location.hash) requestAnimationFrame(() => bar.scrollIntoView({ block: 'start' }));
 })();
 </script>
 </body></html>

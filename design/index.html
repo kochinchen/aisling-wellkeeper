@@ -3,37 +3,263 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Aisling - Wellkeeper 設計文件</title>
+<title>Aisling - Wellkeeper 世界指南</title>
+<meta name="description" content="Aisling - Wellkeeper：深入井底，尋找被遺忘的真相。怪物圖鑑、裝備圖鑑、角色成長模擬、組合技圖鑑與小說《井誌》。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600&family=Noto+Serif+TC:wght@500;700&family=Noto+Serif:wght@500&family=Noto+Sans+TC:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root { --bg: #FDFDFD; --ink: #0E2442; --ink-2: #2C4E82; --muted: #7d6547; --line: #ECECEB; --accent: #D78212; color-scheme: light; }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { --bg: #0b1c33; --ink: #eef2f7; --ink-2: #a5d5e7; --muted: #c9b18f; --line: #213a5c; --accent: #EFA23A; color-scheme: dark; }
+:root {
+  --bg: #100D0A; --card: #1B1610; --line: #55432C; --title: #E3C38A; --text: #B5A48B; --accent: #C69C54; --gold-hi: #E8C77F;
+  --en: "Cinzel", Georgia, serif; --serif: "Noto Serif TC", "Noto Serif", Georgia, serif; --sans: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  --t: 350ms cubic-bezier(.2, .7, .2, 1);
+  color-scheme: dark;
 }
-:root[data-theme="dark"] { --bg: #0b1c33; --ink: #eef2f7; --ink-2: #a5d5e7; --muted: #c9b18f; --line: #213a5c; --accent: #EFA23A; color-scheme: dark; }
-body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.7 "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif; }
-.wrap { max-width: 760px; margin: 0 auto; padding: 48px 16px 72px; display: grid; gap: 24px; }
-.eyebrow { font-size: 13px; letter-spacing: .14em; color: var(--muted); }
-h1 { margin: 0; font-size: clamp(28px, 6vw, 40px); }
-ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
-a.card { display: grid; gap: 2px; padding: 16px 18px; border: 1px solid var(--line); border-radius: 10px; color: inherit; text-decoration: none; }
-a.card:hover, a.card:focus-visible { border-color: var(--accent); outline: none; }
-a.card b { color: var(--ink-2); font-size: 18px; }
-a.card span { color: var(--muted); font-size: 14px; }
-.play { color: var(--accent); font-weight: 700; }
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body {
+  margin: 0; color: var(--text); font: 16px/1.7 var(--sans);
+  /* 微弱的石材紋理：雜訊（SVG）加上大塊的明暗 */
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .55 0 0 0 0 .45 0 0 0 0 .32 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    radial-gradient(ellipse 90% 50% at 50% 0%, #22190f 0%, transparent 70%),
+    var(--bg);
+}
+a { color: inherit; text-decoration: none; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 24px 16px 40px; }
+
+/* 主視覺：整張可點。圖徽區 3.57:1；標題、副標與按鈕照遊戲首頁的規則，全部放在兩人手臂的下方（設計者 2026-11-28）*/
+.hero {
+  position: relative; display: grid; padding-bottom: clamp(18px, 2.4vw, 30px); overflow: hidden; cursor: pointer;
+  border: 1px solid transparent; border-radius: 6px;
+  transition: border-color var(--t), box-shadow var(--t), transform 120ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.hero .art { position: relative; display: block; aspect-ratio: 3.57 / 1; transition: transform var(--t), filter var(--t); }
+/* 圖徽整張完整顯示（object-fit: contain）：3:1 的圖放在 3.57:1 的框裡，左右留暗底 */
+.hero .art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: .62; }
+/* 去背：圖直接放在網頁背景上，沒有底色；只在標題後面墊一層和網頁同色的淡影，讓字看得清楚 */
+.hero .shade { position: absolute; inset: 0; background: radial-gradient(ellipse 28% 50% at 50% 66%, rgb(16 13 10 / 70%) 0%, transparent 100%); }
+/* 遊戲標題畫面的呼吸：11 秒來回、放大到 1.015、亮度 0.95～1.05 */
+.hero .art img { animation: breathe 11s ease-in-out infinite alternate; }
+@keyframes breathe { from { transform: scale(1); filter: brightness(.95); } to { transform: scale(1.015); filter: brightness(1.05); } }
+/* 火星與光塵（同遊戲的 TitleParticles）：畫在 canvas 上 */
+.hero canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+/* 圖徽整張放進圖徽區，高度等於圖徽區；兩人的手下緣約在圖高 45%（同遊戲 TitleScreen 的 --title-top）。
+   標題從圖徽區 48% 的高度開始：往上拉回 52% 的圖徽區高度 = 寬度 × 0.52 / 3.57（margin 的 % 以寬度計） */
+.hero .head { position: relative; z-index: 1; margin-top: -14.6%; display: grid; justify-items: center; gap: clamp(6px, 1.4vw, 16px); }
+.hero h1 { margin: 0; font: 500 clamp(40px, 6.6vw, 84px)/.95 "Noto Serif", Georgia, serif; color: var(--title); text-shadow: 0 2px 24px rgb(0 0 0 / 70%); transition: color var(--t); }
+.hero .sub { display: flex; align-items: center; gap: 18px; font: 500 clamp(12px, 1.6vw, 20px)/1 var(--en); letter-spacing: .5em; color: var(--title); }
+.hero .sub::before, .hero .sub::after { content: ""; width: clamp(40px, 13vw, 170px); height: 1px; background: linear-gradient(90deg, transparent, var(--line)); }
+.hero .sub::after { background: linear-gradient(90deg, var(--line), transparent); }
+.hero .play {
+  display: inline-flex; align-items: center; justify-content: center; gap: 12px; min-width: min(360px, 80%);
+  padding: clamp(8px, 1vw, 12px) 26px; margin-top: 4px;
+  border: 1px solid var(--accent); border-radius: 4px; background: rgb(27 22 16 / 88%);
+  font: 700 clamp(15px, 1.5vw, 18px)/1.3 var(--serif); color: var(--title); letter-spacing: .04em;
+  transition: background var(--t), border-color var(--t), color var(--t);
+}
+.hero .play svg { width: 14px; height: 14px; flex: none; }
+.hero .play .hover, .hero .play .busy { display: none; }
+/* 滑過：放大、變亮、金框亮起、光點浮出、按鈕換字 */
+.hero:hover, .hero:focus-visible { border-color: var(--gold-hi); box-shadow: 0 0 0 1px rgb(232 199 127 / 25%), 0 12px 40px rgb(0 0 0 / 50%); outline: none; }
+.hero:hover .art, .hero:focus-visible .art { transform: scale(1.025); filter: brightness(1.15); }
+.hero:hover h1, .hero:focus-visible h1 { color: #F2DBA8; }
+.hero:hover .play, .hero:focus-visible .play, .hero.busy .play { background: #5A4426; border-color: var(--gold-hi); color: #F6E3B8; }
+.hero:hover .play .idle, .hero:focus-visible .play .idle { display: none; }
+.hero:hover .play .hover, .hero:focus-visible .play .hover { display: inline; }
+.hero:active { transform: scale(.99); }
+.hero.busy .play .idle, .hero.busy .play .hover, .hero.busy .play svg { display: none !important; }
+.hero.busy .play .busy { display: inline !important; }
+
+.lead { text-align: center; padding: 34px 0 10px; }
+.lead h2 { margin: 0; font: 700 clamp(20px, 2.4vw, 28px)/1.4 var(--serif); color: var(--title); letter-spacing: .04em; }
+.lead p { margin: 6px 0 0; font: 500 clamp(13px, 1.4vw, 17px)/1.5 "Noto Serif", Georgia, serif; color: var(--text); letter-spacing: .03em; }
+
+.section { display: flex; align-items: center; gap: 18px; margin: 30px 0 20px; scroll-margin-top: 16px; }
+.section::before, .section::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.section h3 { margin: 0; font: 700 clamp(17px, 1.8vw, 22px)/1 var(--serif); color: var(--title); letter-spacing: .08em; }
+
+/* 卡片：小說自己一排、其他一排；每排一樣高（grid-auto-rows: 1fr） */
+.cards { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 1fr; gap: 14px; }
+.card {
+  display: grid; align-content: start; gap: 14px; padding: 22px 22px 20px; min-height: 170px;
+  background: var(--card); border: 1px solid var(--line); border-radius: 5px;
+  transition: border-color var(--t), background var(--t), transform var(--t);
+}
+.card.wide { grid-column: 1 / -1; grid-template-columns: auto 1fr; align-items: center; align-content: center; gap: 22px; }
+.card .icon { width: 36px; height: 36px; fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; transition: stroke var(--t); }
+.card.wide .icon { width: 52px; height: 52px; }
+.card .txt { display: grid; gap: 4px; }
+.card b { font: 700 clamp(19px, 1.7vw, 22px)/1.3 var(--serif); color: var(--title); }
+.card small { font: 500 13px/1.3 var(--en); letter-spacing: .12em; color: #8d7b5f; }
+.card .txt > span { font-size: 15px; line-height: 1.6; color: var(--text); margin-top: 4px; }
+.card.wide b { font-size: clamp(22px, 2.2vw, 26px); }
+.card.wide .txt > span { font-size: 16px; }
+.card:hover, .card:focus-visible { border-color: var(--accent); background: #211a12; transform: translateY(-2px); outline: none; }
+.card:hover .icon, .card:focus-visible .icon { stroke: var(--gold-hi); }
+.card:active { transform: scale(.99); }
+
+footer { margin-top: 34px; padding-top: 22px; border-top: 1px solid var(--line); text-align: center; font: 500 14px/1 var(--en); letter-spacing: .14em; color: #8d7b5f; }
+
+/* 平板：卡片兩欄 */
+@media (max-width: 900px) {
+  .cards { grid-template-columns: repeat(2, 1fr); }
+}
+/* 手機：主視覺改成「圖在上、標題與按鈕在下」，卡片一欄 */
+@media (max-width: 640px) {
+  .hero .art { position: relative; inset: auto; aspect-ratio: 3 / 1; }
+  .hero .shade { display: none; }
+  /* 手機的圖徽區是 3:1，標題從 48% 開始：往上拉回 寬度 × 0.52 / 3 */
+  .hero .head { margin-top: -17.3%; }
+  .hero .play { min-width: 0; width: calc(100% - 40px); }
+  .cards { grid-template-columns: 1fr; grid-auto-rows: auto; }
+  .card { min-height: 0; grid-template-columns: auto 1fr; align-items: center; gap: 16px; padding: 18px; }
+  .card .icon, .card.wide .icon { width: 34px; height: 34px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero, .hero .art, .hero .art img, .card { transition: none; animation: none; }
+}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="eyebrow">Aisling - Wellkeeper · 設計文件</div>
-  <h1>設計文件</h1>
-  <p><a class="play" href="../">▶ 開始遊玩</a></p>
-  <ul>
-    <li><a class="card" href="codex.html"><b>怪物圖鑑</b><span>所有怪物的縮圖、各樓層的怪物數值、魔王與隱藏魔王的數值與能力。</span></a></li>
-    <li><a class="card" href="items.html"><b>裝備圖鑑</b><span>六種稀有度、掉落機率、裝備基底、詞綴、傳奇與神話裝備。</span></a></li>
-    <li><a class="card" href="growth.html"><b>角色成長模擬</b><span>成長表、屬性點與技能點模擬器、三段 Combo 測試、融合試算。</span></a></li>
-    <li><a class="card" href="combos.html"><b>組合技圖鑑</b><span>Q～D 七組連段的組合技規則、所有會觸發的排列與連段試算。</span></a></li>
-    <li><a class="card" href="novel.html"><b>井誌（小說）</b><span>完整小說：年老的主角一層一層講給孩子聽，收錄《井誌》69 頁與全部過場。</span></a></li>
-  </ul>
+  <a class="hero" id="play" href="../" aria-label="開始遊玩 Aisling - Wellkeeper">
+    <span class="art"><img src="emblem.webp" alt="紅焰的女戰士與月光的皇后伸手相望" width="2172" height="724"></span>
+    <canvas aria-hidden="true"></canvas>
+    <span class="shade"></span>
+    <span class="head">
+      <h1>Aisling</h1>
+      <span class="sub">WELLKEEPER</span>
+      <span class="play"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M3 1.8l9 5.2-9 5.2Z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span class="idle">點選圖片開始遊玩</span><span class="hover">進入 Aisling 的世界</span><span class="busy">正在進入遊戲…</span></span>
+    </span>
+  </a>
+
+  <div class="lead">
+    <h2>深入井底，尋找被遺忘的真相</h2>
+    <p>Dark Fantasy · Action RPG · Dungeon Exploration</p>
+  </div>
+
+  <div class="section" id="guide"><h3>世界探索指南</h3></div>
+  <div class="cards">
+    <a class="card wide" href="novel.html">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.5C10 5 7.3 4.5 4 4.5v13c3.3 0 6 .5 8 2 2-1.5 4.7-2 8-2v-13c-3.3 0-6 .5-8 2Z"/><path d="M12 6.5v13"/></svg>
+      <span class="txt"><b>井誌</b><small>CHRONICLES</small><span>完整小說：年老的主角一層一層講給孩子聽，收錄《井誌》69 頁與全部過場。</span></span>
+    </a>
+    <a class="card" href="codex.html">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a7 7 0 0 0-7 7c0 2.4 1.1 4.2 3 5.3V19a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3.7c1.9-1.1 3-2.9 3-5.3a7 7 0 0 0-7-7Z"/><circle cx="9.3" cy="11" r="1.6"/><circle cx="14.7" cy="11" r="1.6"/><path d="M10.5 20v-2.5M13.5 20v-2.5"/></svg>
+      <span class="txt"><b>怪物圖鑑</b><small>BESTIARY</small><span>怪物、魔王與地牢生態</span></span>
+    </a>
+    <a class="card" href="items.html">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l9.5 9.5M4 4h3.5L17 13.5M4 4v3.5L13.5 17"/><path d="M20 4l-6 6M20 4h-3.5l-3 3M20 4v3.5l-3 3"/><path d="M12 16l4 4M16 12l4 4M14.5 18.5l4-4M6 18l3-3M5 15l4 4"/></svg>
+      <span class="txt"><b>裝備圖鑑</b><small>EQUIPMENT</small><span>裝備、詞綴與稀有度</span></span>
+    </a>
+    <a class="card" href="growth.html">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16"/><path d="M6 17v-3M10 17v-6M14 17v-4M18 17V9"/><path d="M5 11l5-5 4 3 6-6M16 3h4v4"/></svg>
+      <span class="txt"><b>角色成長模擬</b><small>CHARACTER LAB</small><span>屬性、技能與融合試算</span></span>
+    </a>
+    <a class="card" href="combos.html">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8Z"/></svg>
+      <span class="txt"><b>組合技圖鑑</b><small>COMBO CODEX</small><span>連招規則與特殊組合技</span></span>
+    </a>
+  </div>
+
+  <footer>AISLING — WELLKEEPER</footer>
 </div>
+<script>
+// 點主視覺：按鈕先顯示「正在進入遊戲…」，短暫停一下再進遊戲（Ctrl / Cmd 點擊照瀏覽器原本的開新分頁）
+document.getElementById('play').addEventListener('click', (e) => {
+  if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+  e.preventDefault();
+  const a = e.currentTarget;
+  a.classList.add('busy');
+  setTimeout(() => { location.href = a.href; }, 380);
+});
+// 從遊戲按「上一頁」回來時（頁面從快取還原），按鈕恢復原狀
+addEventListener('pageshow', () => document.getElementById('play').classList.remove('busy'));
+// 火星與光塵（照遊戲標題畫面的 src/ui/title/TitleParticles.vue）：女戰士（左、紅）往外往上飄的餘燼、
+// 皇后（右、藍）更慢的月白光塵、兩人衣襬相連的紫光；從圖上真的有顏色的地方冒出。滑過主視覺時冒得比較多。
+(() => {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const hero = document.getElementById('play');
+  const img = hero.querySelector('.art img');
+  const cv = hero.querySelector('canvas');
+  const SPAWN = { ember: [11, 46], moon: [7, 40], violet: [1.5, 10] };
+  const EMBER = ['#ff3d2e', '#e8452c', '#c8201c', '#ff5a36'], MOON = ['#d6e6ff', '#a9c8ff', '#ffffff', '#bfd0ee'], VIOLET = ['#c98cff', '#b07ae8'];
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const pick = (xs) => xs[Math.floor(Math.random() * xs.length)];
+  const em = { ember: [], moon: [], violet: [] };
+  const ps = [], acc = { ember: 0, moon: 0, violet: 0 };
+  let last = 0, t0 = 0, hot = false;
+  hero.addEventListener('pointerenter', () => (hot = true));
+  hero.addEventListener('pointerleave', () => (hot = false));
+  const sample = async () => {
+    const im = new Image();
+    im.src = img.currentSrc || img.src;
+    await im.decode();
+    const w = 360, h = Math.round((w * im.naturalHeight) / im.naturalWidth);
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    const x2 = c.getContext('2d', { willReadFrequently: true });
+    x2.drawImage(im, 0, 0, w, h);
+    const d = x2.getImageData(0, 0, w, h).data;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 4;
+      if (d[i + 3] < 150) continue;
+      const r = d[i], g = d[i + 1], b = d[i + 2], p = [x / w, y / h];
+      if (r > 90 && b > 90 && g < Math.min(r, b) - 15 && Math.abs(r - b) < 70) em.violet.push(p);
+      else if (r > b + 35 && x < w * 0.55) em.ember.push(p);
+      else if (b > r + 15 && x > w * 0.45) em.moon.push(p);
+    }
+  };
+  const spawn = (k) => {
+    if (!em[k].length) return null;
+    const [x, y] = pick(em[k]);
+    const out = x < 0.5 ? -1 : 1;
+    if (k === 'ember') return { k, x, y, vx: out * rand(0.004, 0.016), vy: -rand(0.006, 0.02), age: 0, life: rand(2.5, 5), size: rand(0.7, 2), color: Math.random() < 0.15 ? '#ffa040' : pick(EMBER), ph: rand(0, 6.28), sp: false };
+    if (k === 'moon') { const sp = Math.random() < 0.06; return { k, x, y, vx: out * rand(0.002, 0.007), vy: rand(-0.006, 0.002), age: 0, life: rand(4, 8), size: sp ? rand(1.6, 2.6) : rand(0.6, 1.6), color: pick(MOON), ph: rand(0, 6.28), sp }; }
+    return { k, x, y, vx: rand(-0.002, 0.002), vy: -rand(0.002, 0.006), age: 0, life: rand(3, 5), size: rand(0.8, 1.6), color: pick(VIOLET), ph: rand(0, 6.28), sp: false };
+  };
+  const frame = (t) => {
+    requestAnimationFrame(frame);
+    const dt = Math.min(0.05, last ? (t - last) / 1000 : 0);
+    last = t; t0 += dt;
+    const dpr = Math.min(2, devicePixelRatio || 1), box = cv.getBoundingClientRect();
+    if (cv.width !== Math.round(box.width * dpr) || cv.height !== Math.round(box.height * dpr)) { cv.width = Math.round(box.width * dpr); cv.height = Math.round(box.height * dpr); }
+    const ctx = cv.getContext('2d');
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    const boost = hot ? 1.8 : 1;
+    for (const k in SPAWN) {
+      acc[k] += SPAWN[k][0] * boost * dt;
+      while (acc[k] >= 1) { acc[k] -= 1; if (ps.filter((p) => p.k === k).length < SPAWN[k][1] * boost) { const p = spawn(k); if (p) ps.push(p); } }
+    }
+    // 圖片實際畫出來的範圍（object-fit: contain，含呼吸與滑過的縮放）
+    const r = img.getBoundingClientRect(), ar = img.naturalWidth / img.naturalHeight || 3;
+    let iw = r.width, ih = r.width / ar;
+    if (ih > r.height) { ih = r.height; iw = ih * ar; }
+    const ox = (r.left + (r.width - iw) / 2 - box.left) * dpr, oy = (r.top + (r.height - ih) / 2 - box.top) * dpr;
+    const ew = iw * dpr, eh = ih * dpr, unit = Math.max(0.5, iw / 1750) * dpr;
+    ctx.globalCompositeOperation = 'lighter';
+    for (let i = ps.length - 1; i >= 0; i--) {
+      const p = ps[i];
+      p.age += dt;
+      if (p.age >= p.life) { ps.splice(i, 1); continue; }
+      const sway = p.k === 'ember' ? Math.sin(t0 * 2 + p.ph) * 0.004 : Math.sin(t0 * 0.8 + p.ph) * 0.0015;
+      p.x += (p.vx + sway) * dt;
+      p.y += p.vy * 3 * dt;
+      let a = Math.min(1, p.age / (p.life * 0.15)) * Math.min(1, (p.life - p.age) / (p.life * 0.4)) * 0.85;
+      if (p.k === 'ember') a *= 0.75 + 0.25 * Math.sin(t0 * 11 + p.ph);
+      if (p.sp) a *= 0.5 + 0.5 * Math.abs(Math.sin(t0 * 3 + p.ph));
+      const x = ox + p.x * ew, y = oy + p.y * eh, s = p.size * unit * 1.6;
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = a * 0.22; ctx.beginPath(); ctx.arc(x, y, s * 3, 0, 6.283); ctx.fill();
+      ctx.globalAlpha = a; ctx.beginPath(); ctx.arc(x, y, s, 0, 6.283); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  };
+  sample().then(() => requestAnimationFrame(frame)).catch(() => {});
+})();
+</script>
 </body>
 </html>

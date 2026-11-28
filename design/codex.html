@@ -330,7 +330,8 @@ const frame = (m, badge = true) =>
   (badge && m.kind !== 'normal' ? '<span class="badge ' + m.kind + '">' + KIND[m.kind] + '</span>' : '') + '</div>';
 const icon = { back: '<svg class="i" viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M15 5l-7 7 7 7"/></svg>' };
 /** 一張卡片：所有視角共用（圖框、名稱、一行說明），點了都到同一個詳細頁 */
-const card = (m, sub) => '<a class="card ' + m.kind + '" href="#/m/' + key(m.id) + '">' + frame(m) + '<div class="name">' + esc(m.name) + '</div><div class="sub num">' + sub + '</div></a>';
+// floor：點了直接打開那一層的數值（魔王在 31～34 層再次登場時，卡片連到那一層）
+const card = (m, sub, floor) => '<a class="card ' + m.kind + '" href="#/m/' + key(m.id) + (floor ? '/' + floor : '') + '">' + frame(m) + '<div class="name">' + esc(m.name) + '</div><div class="sub num">' + sub + '</div></a>';
 
 // ── 路由：#/list、#/bosses、#/hidden、#/floor/<樓層>、#/m/<怪物>（怪物、魔王、隱藏魔王共用的詳細頁） ──
 const state = { style: 'all', element: new Set(), zone: new Set(), floorAll: false };
@@ -414,7 +415,7 @@ function bindList() {
 // ── 魔王圖鑑、隱藏魔王：同樣的方格卡片 ──
 function bossList() {
   return '<p class="count"><span>每一區最後一層的魔王。點卡片看詳細資料</span></p><div class="grid">' +
-    M.bosses.map((b) => card(byId[b.id], pad(b.floor) + 'F・' + esc(zoneName(b.zone)))).join('') + '</div>';
+    M.bosses.map((b) => card(byId[b.id], pad(b.floor) + 'F・' + esc(zoneName(b.zone)), b.floor)).join('') + '</div>';
 }
 function hiddenList() {
   return '<p class="count"><span>打開封住的牆才會遇到，可以不打；每一層的數值都不一樣。點卡片看詳細資料與數值成長</span></p><div class="grid grid-2">' +
@@ -611,7 +612,7 @@ function floorView(n) {
       return '<button class="fbtn' + (hasBoss ? ' boss' : '') + '" aria-pressed="' + (k === n) + '" onclick="go(\'#/floor/' + k + '\')" title="第 ' + k + ' 層' + (hasBoss ? '（魔王）' : '') + '">' + pad(k) + 'F</button>';
     }).join('') + '</div>').join('') + '</div>';
   const head = '<div class="floor-head"><b>第 ' + n + ' 層</b><span>' + esc(zoneName(f.zone)) + '</span><span>' + f.monsters.length + ' 種怪物</span>' +
-    (boss ? '<span>魔王：<a class="mname" href="#/m/' + key(boss.id) + '" data-pop="' + boss.id + '">' + esc(boss.name) + '</a></span>' : '') + '</div>';
+    (boss ? '<span>魔王：<a class="mname" href="#/m/' + key(boss.id) + '/' + n + '" data-pop="' + boss.id + '">' + esc(boss.name) + '</a></span>' : '') + '</div>';
   if (!f.monsters.length) return picker + head + '<p class="empty">這一層沒有一般怪物</p>';
   const max = f.monsters[0].chance;
   const main = f.monsters.filter((r) => r.chance >= FLOOR_MIN);

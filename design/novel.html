@@ -751,6 +751,7 @@ strong { color: var(--title); font-weight: 700; }
   var N = slots.length;
   var at = function (k) { return (k / (N - 1)) * 100 + '%'; };
   var slotOf = {};
+  var anchors = slots.map(function (x) { return x.part ? x.part.closest('.part').querySelector('.part-title') : x.ch; });
   slots.forEach(function (x, k) { if (x.ch) slotOf[x.ch.id] = k; });
   function hover(el, text, top, onLabel) {
     el.addEventListener('pointerenter', function () {
@@ -842,8 +843,14 @@ strong { color: var(--title); font-weight: 700; }
       x.el.classList.toggle('read', all.every(function (c) { return read[c.id]; }));
       x.el.classList.toggle('here', cur >= 0 && chapters[cur].dataset.part === x.el.dataset.part);
     });
-    // 燭光在目前這一章的點和下一個點之間，照章內比例；還沒進正文時停在最上面
-    var pos = cur < 0 ? 0 : Math.min(1, (slotOf[chapters[cur].id] + ratio) / (N - 1));
+    // 燭光：每個點對應一個標題（大點＝卷名、小點＝章名）。看「畫面上方 40px 那條線」（點卷名或章名跳過去時標題停在 24px）已經捲過哪個標題，
+    // 停在那個點，往下一個標題之間照比例移動；卷名在上方時停在卷的大點，章名到上方才移到那一層
+    var line = 40, k = -1, t0 = 0, t1 = 0;
+    for (var j = 0; j < N; j++) {
+      var top = anchors[j].getBoundingClientRect().top;
+      if (top <= line) { k = j; t0 = top; } else { t1 = top; break; }
+    }
+    var pos = k < 0 ? 0 : k >= N - 1 ? 1 : Math.min(1, (k + Math.min(1, (line - t0) / Math.max(t1 - t0, 1))) / (N - 1));
     partNodes.forEach(function (x) {
       var all = chapters.filter(function (c) { return c.dataset.part === x.part; });
       x.b.classList.toggle('read', all.every(function (c) { return read[c.id]; }));

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>怪物圖鑑</title>
+<title>Aisling - Wellkeeper 怪物圖鑑</title>
 <meta name="description" content="Aisling - Wellkeeper 怪物圖鑑：井底的生物、亡者與魔王。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -67,6 +67,13 @@ svg.i { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-widt
 .filters .row { display: grid; grid-template-columns: 3.5em minmax(0, 1fr); gap: 12px; align-items: start; }
 .filters .row > b { padding-top: 6px; font-size: 13px; font-weight: 500; color: var(--muted); }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+/* 手機：區域只寫樓層範圍（名稱在選取後的標題與樓層生態裡看得到），篩選區不佔掉整個畫面 */
+@media (max-width: 640px) { .chip .zn { display: none; } }
+.search { display: flex; align-items: center; gap: 8px; max-width: 420px; padding: 0 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 999px; }
+.search:focus-within { border-color: var(--gold); }
+.search svg { width: 16px; height: 16px; flex: none; fill: none; stroke: var(--muted); stroke-width: 1.8; }
+.search input { flex: 1; min-width: 0; padding: 7px 0; color: var(--text); background: none; border: 0; outline: none; font: inherit; font-size: 14px; }
+.search input::placeholder { color: var(--muted); opacity: .7; }
 .chip { padding: 5px 13px; font-size: 14px; color: var(--text); background: #18140E; border: 1px solid var(--line); border-radius: 4px; cursor: pointer; transition: border-color var(--t), background var(--t); }
 .chip:hover { border-color: var(--muted); }
 .chip[aria-pressed="true"] { color: var(--gold); background: #3A2C1B; border-color: #6B5536; }
@@ -334,7 +341,7 @@ const icon = { back: '<svg class="i" viewBox="0 0 24 24" style="width:16px;heigh
 const card = (m, sub, floor) => '<a class="card ' + m.kind + '" href="#/m/' + key(m.id) + (floor ? '/' + floor : '') + '">' + frame(m) + '<div class="name">' + esc(m.name) + '</div><div class="sub num">' + sub + '</div></a>';
 
 // ── 路由：#/list、#/bosses、#/hidden、#/floor/<樓層>、#/m/<怪物>（怪物、魔王、隱藏魔王共用的詳細頁） ──
-const state = { style: 'all', element: new Set(), zone: new Set(), floorAll: false };
+const state = { style: 'all', element: new Set(), zone: new Set(), floorAll: false, q: '' };
 let lastTab = 'list';
 function go(hash) { if (location.hash !== hash) location.hash = hash; else render(); }
 // 分頁列留在原位；捲過它之後，畫面頂端滑進一條精簡分頁列（只有名稱，position: fixed），捲回來時再滑出去。
@@ -381,16 +388,19 @@ function render() {
 
 // ── 怪物總覽：類型 / 屬性 / 區域直接列出來 ──
 function listView() {
-  const chip = (group, val, label, on, dot) => '<button class="chip" data-g="' + group + '" data-v="' + val + '" aria-pressed="' + on + '">' + (dot ? '<span class="dot" style="background:' + dot + '"></span>' : '') + esc(label) + '</button>';
+  const chip = (group, val, label, on, dot, sub) => '<button class="chip" data-g="' + group + '" data-v="' + val + '" aria-pressed="' + on + '">' + (dot ? '<span class="dot" style="background:' + dot + '"></span>' : '') + esc(label) + (sub ? '<span class="zn"> ' + esc(sub) + '</span>' : '') + '</button>';
   const types = [['all', '全部怪物'], ...Object.entries(STYLE), ['variant', '特化型'], ['boss', '魔王'], ['hidden', '隱藏魔王']];
+  // 名稱搜尋放在篩選最上面（設計者 2026-11-28：67 種怪物，知道名字就直接找）
   return '<div class="filters">' +
+    '<div class="row"><b>搜尋</b><label class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><input id="q" type="search" placeholder="搜尋怪物名稱" value="' + esc(state.q) + '" aria-label="搜尋怪物名稱"></label></div>' +
     '<div class="row"><b>類型</b><div class="chips">' + types.map(([k, l]) => chip('style', k, l, state.style === k)).join('') + '</div></div>' +
     '<div class="row"><b>屬性</b><div class="chips">' + Object.entries(ELEMENT).map(([k, [l, c]]) => chip('element', k, l, state.element.has(k), c)).join('') + '</div></div>' +
-    '<div class="row"><b>區域</b><div class="chips">' + M.zones.map((z) => chip('zone', z.id, pad(z.from) + '–' + pad(z.to) + 'F ' + z.name, state.zone.has(String(z.id)))).join('') + '</div></div>' +
+    '<div class="row"><b>區域</b><div class="chips">' + M.zones.map((z) => chip('zone', z.id, pad(z.from) + '–' + pad(z.to) + 'F', state.zone.has(String(z.id)), null, z.name)).join('') + '</div></div>' +
     '</div><p class="count"><span id="count"></span><button id="reset" type="button">清除篩選</button></p><div class="grid" id="grid"></div>';
 }
 function filtered() {
   return M.monsters.filter((m) =>
+    (!state.q || m.name.includes(state.q.trim())) &&
     (state.style === 'all' || m.styles.includes(state.style) || m.kind === state.style) &&
     (!state.element.size || m.elements.some((e) => state.element.has(e))) &&
     (!state.zone.size || m.zones.some((z) => state.zone.has(String(z)))));
@@ -398,7 +408,7 @@ function filtered() {
 function paintGrid() {
   const list = filtered();
   $('#count').textContent = '共 ' + list.length + ' 種' + (list.length !== M.monsters.length ? '（全部 ' + M.monsters.length + ' 種）' : '') + '・圖中右邊的人是主角，當作比例尺';
-  $('#reset').hidden = state.style === 'all' && !state.element.size && !state.zone.size;
+  $('#reset').hidden = state.style === 'all' && !state.element.size && !state.zone.size && !state.q;
   $('#grid').innerHTML = list.map((m) => card(m, span(m.floors))).join('') || '<p class="empty">沒有符合條件的怪物</p>';
 }
 function bindList() {
@@ -409,7 +419,8 @@ function bindList() {
     else { const set = state[g]; set.has(v) ? set.delete(v) : set.add(v); c.setAttribute('aria-pressed', String(set.has(v))); }
     paintGrid();
   }));
-  $('#reset').addEventListener('click', () => { state.style = 'all'; state.element.clear(); state.zone.clear(); render(); });
+  $('#reset').addEventListener('click', () => { state.style = 'all'; state.element.clear(); state.zone.clear(); state.q = ''; render(); });
+  $('#q').addEventListener('input', (e) => { state.q = e.target.value; paintGrid(); });
 }
 
 // ── 魔王圖鑑、隱藏魔王：同樣的方格卡片 ──

@@ -165,14 +165,215 @@ footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line);
 #loadErr { color: var(--bad); font-weight: 700; }
 </style>
 
+<style id="doc-theme-growth">
+/* 設計文件頁的共用外觀（設計者 2026-11-28）：和公開網站、怪物圖鑑同一套黑金色系，主色古金色
+   （全站主色維持古金色，和稀有度的黃、橘色階差很多，不用怕撞色）。稀有度顏色本身不改。
+   用在裝備圖鑑、角色成長模擬（scripts/site-docs/apply.py），各頁專用的樣式在 pages/<頁>.css */
+:root, :root:not([data-theme="light"]), :root[data-theme="light"], :root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #15110C; --panel: #1D1812; --soft: #1A1611; --warm: #221D17;
+  --ink: #DED1BA; --ink-2: #D9B474; --muted: #A38B66; --line: #493A28; --accent: #D9B474;
+  --verd: #D9B474; --verd-dim: #3A2C1B;
+  --r-normal: #e8e2d4; --r-magic: #8aa2ff; --r-rare: #f2d24b; --r-epic: #c298ff; --r-legendary: #ff9a3c; --r-mythic: #ff5c5c;
+}
+html { background: var(--bg); }
+body {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .55 0 0 0 0 .45 0 0 0 0 .32 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    var(--bg) !important;
+  color: var(--ink) !important;
+  font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+}
+.wrap { max-width: 1200px; padding: 14px 16px 64px; }
+h1, h2 { color: var(--verd); font-weight: 700; }
+h2 { font-size: clamp(22px, 3vw, 28px); }
+h3 { color: var(--verd); font-family: "Noto Serif TC", serif; font-weight: 700; }
+a { color: var(--verd); }
+/* 資料來源（程式檔名）是開發用的，公開頁面不顯示 */
+.sec-head .eyebrow, header > .eyebrow { display: none; }
+.sec-head p { color: var(--muted); }
+.muted, .small.muted { color: var(--muted); }
+
+/* 頂端與標題（同怪物圖鑑的版面） */
+.a-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 14px; color: var(--muted); }
+.a-top a { color: var(--muted); text-decoration: none; }
+.a-top a:hover { color: var(--verd); }
+.a-hero { text-align: center; padding: 34px 0 26px; border-bottom: 1px solid var(--line); }
+.a-hero svg { width: 46px; height: 46px; fill: none; stroke: var(--verd); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.a-hero h1 { margin: 8px 0 0; font: 700 clamp(34px, 6vw, 52px)/1.15 "Noto Serif TC", serif; letter-spacing: .06em; }
+.a-hero .en { margin: 10px 0 0; font: 500 15px/1 "Cinzel", Georgia, serif; letter-spacing: .42em; color: var(--muted); }
+.a-hero p { max-width: none; }
+.a-hero p.lead { max-width: 44em; margin: 16px auto 0; color: var(--ink); font-size: 15px; }
+header { padding-bottom: 0; gap: 0; }
+header nav.toc { display: none; }
+
+/* 分頁：一次看一段 */
+.a-tabs { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 8px; margin: 24px 0 8px; }
+.a-tab { display: grid; justify-items: center; gap: 6px; padding: 12px 6px 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; color: var(--muted); cursor: pointer; text-align: center; font: 500 14px/1.3 "Noto Serif TC", serif; }
+.a-tab svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.a-tab span { color: var(--ink); }
+.a-tab:hover { border-color: var(--muted); }
+.a-tab[aria-selected="true"] { background: var(--verd-dim); border-color: var(--verd); color: var(--verd); }
+.a-tab[aria-selected="true"] span { color: #F1DEB0; }
+/* 分組的分頁列（分頁多時依閱讀順序分成幾群，每群上方一行小標） */
+.a-tabs.grouped { display: flex; gap: 16px; }
+.a-group { display: grid; gap: 8px; align-content: start; min-width: 0; }
+.a-glabel { display: flex; align-items: center; gap: 10px; font-size: 12px; letter-spacing: .12em; color: var(--muted); }
+.a-glabel::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.a-gtabs { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 8px; }
+.a-gtabs .a-tab { height: 100%; box-sizing: border-box; }
+/* 「怎麼用」的步驟列：一步一格，格子之間有箭頭 */
+.a-flow { list-style: none; margin: 18px 0 0; padding: 0; display: grid; grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; }
+.a-flow li { position: relative; display: grid; gap: 4px; align-content: start; padding: 14px 20px; }
+.a-flow li + li { border-left: 1px solid var(--line); }
+.a-flow li + li::before { content: "›"; position: absolute; left: -10px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; display: grid; place-items: center; font-size: 13px; line-height: 1; color: var(--verd); background: var(--bg); border: 1px solid var(--line); border-radius: 50%; }
+.a-flow b { color: var(--verd); font: 700 16px/1.3 "Noto Serif TC", serif; }
+.a-flow span { color: var(--muted); font-size: 13px; line-height: 1.6; }
+.a-flow a { color: var(--verd); }
+@media (max-width: 860px) {
+  .a-flow { grid-template-columns: minmax(0, 1fr); }
+  .a-flow li + li { border-left: 0; border-top: 1px solid var(--line); }
+  .a-flow li + li::before { left: 50%; top: -10px; transform: translateX(-50%) rotate(90deg); }
+  /* 四步的在窄螢幕排成 2 × 2，不把主要內容推得太遠 */
+  .a-flow-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .a-flow-4 li { padding: 10px 12px; }
+  .a-flow-4 li + li { border-top: 0; }
+  .a-flow-4 li:nth-child(n+3) { border-top: 1px solid var(--line); }
+  .a-flow-4 li:nth-child(even) { border-left: 1px solid var(--line); }
+  .a-flow-4 li + li::before { display: none; }
+  .a-flow-4 b { font-size: 14px; }
+  .a-flow-4 span { font-size: 12px; }
+}
+/* 捲過分頁列之後，頂端滑進一條精簡分頁列（只有名稱）；只用位移與透明度動畫，不改版面、不用毛玻璃（設計者 2026-11-28：捲動要順） */
+.a-sentinel { height: 1px; margin-top: -1px; }
+.a-fixed { position: fixed; z-index: 30; left: 0; right: 0; top: 0; background: #15110C; border-bottom: 1px solid var(--line); box-shadow: 0 8px 18px rgb(0 0 0 / 45%);
+  transform: translateY(-110%); visibility: hidden; transition: transform 220ms ease, visibility 0s linear 220ms; will-change: transform; }
+.a-fixed.on { transform: none; visibility: visible; transition: transform 220ms ease; }
+.a-fixed-in { max-width: 1200px; margin: 0 auto; padding: 6px 16px; display: grid; grid-template-columns: repeat(var(--n, 9), minmax(0, 1fr)); gap: 6px; }
+.a-fixed .a-tab { padding: 7px 4px; gap: 0; }
+.a-fixed .a-more { display: none; }
+/* 手機：精簡列只留目前這一頁＋「切換 ▾」，展開時蓋在內容上（不推動內容） */
+@media (max-width: 640px) {
+  .a-fixed-in { grid-template-columns: minmax(0, 1fr) auto; }
+  .a-fixed:not(.open) .a-tab:not([aria-selected="true"]) { display: none; }
+  .a-fixed .a-more { display: block; padding: 0 14px; font-size: 14px; color: var(--verd); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; }
+  .a-fixed.open .a-fixed-in { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .a-fixed.open .a-more { grid-column: 1 / -1; padding: 6px; }
+}
+@media (prefers-reduced-motion: reduce) { .a-fixed, .a-fixed.on { transition: none; } }
+section { padding-top: 26px; }
+section.a-off, .a-off { display: none !important; }
+.a-pager { display: flex; justify-content: space-between; gap: 12px; margin-top: 30px; padding-top: 16px; border-top: 1px solid var(--line); }
+.a-pager button { padding: 8px 14px; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; font-size: 14px; }
+.a-pager button:hover { border-color: var(--verd); color: var(--verd); }
+.a-pager button[hidden] { visibility: hidden; display: inline-block !important; }
+
+/* 表格、卡片、按鈕：深色、灰色線條 */
+.tbl { border-color: var(--line); border-radius: 6px; background: var(--panel); }
+/* 不要表格裡面另外捲動（設計者 2026-11-28）：一頁只放一段，大表整張展開，跟著整頁捲；太寬時才左右捲 */
+.tbl, .tbl.tall { max-height: none !important; overflow-y: visible; }
+th { background: #18140F; color: var(--muted); border-bottom-color: var(--line); }
+td { border-bottom-color: var(--line); }
+tbody tr:hover td { background: #221D17; }
+td.rowh { background: #18140F; color: var(--verd); }
+.formula { background: #18140F; border: 1px solid var(--line); color: var(--ink); }
+.u { background: var(--panel); border-color: var(--line); border-radius: 6px; }
+.u-role { color: var(--verd); }
+.u li.main::before { color: var(--verd); }
+.u li.strong::before { color: var(--verd); }
+.u .lore { border-top-color: var(--line); }
+button, select { color: var(--ink); background: var(--panel); border-color: var(--line); border-radius: 4px; padding: 5px 12px; }
+button:hover { border-color: var(--muted); }
+button[aria-pressed="true"] { background: var(--verd-dim); color: #F1DEB0; border-color: var(--verd); }
+.legend { color: var(--muted); }
+.relic-page { background: var(--panel); border-color: var(--line); }
+.sw { border-color: var(--line); }
+footer { border-top-color: var(--line); color: var(--muted); text-align: center; }
+/* 分段的呈現（設計者 2026-11-28：改善呈現方式） */
+/* 小標題：左邊一條古金色線，和下面的內容分開 */
+section h3 { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-size: 17px; }
+section h3::before { content: ""; width: 3px; height: 1em; background: var(--verd); border-radius: 2px; }
+/* 說明清單（物品等級與詞綴階級）改成卡片 */
+ul.notes, ul.rules { list-style: none; padding: 0; gap: 8px; }
+ul.notes li, ul.rules li { padding: 10px 14px; background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--verd); border-radius: 4px; }
+.sec-head p { max-width: 60em; line-height: 1.8; }
+.filters { padding: 12px 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; }
+/* 不對讀者說明的計算邏輯（apply-theme.py 標上 a-calc） */
+.a-calc { display: none !important; }
+/* 減少左右捲動（設計者 2026-11-28）：公式與文字欄可以換行，只有數字不換行；兩欄的段落在不夠寬時改成上下排 */
+.formula { white-space: normal !important; overflow-wrap: anywhere; }
+th, td { white-space: normal; }
+td.n, th.n, td.num { white-space: nowrap; }
+th, td { padding: 7px 9px; }
+@media (max-width: 1100px) { .two { grid-template-columns: minmax(0, 1fr) !important; } }
+/* 手機：表格的每一列變成一張卡片，欄名寫在每個值的左邊（data-label 由分頁腳本加上），只上下捲 */
+@media (max-width: 640px) {
+  .tbl { overflow: visible; border: 0; background: none; }
+  .tbl table, .tbl tbody, .tbl tr, .tbl td { display: block; width: auto !important; }
+  .tbl thead { display: none; }
+  .tbl tr { margin-bottom: 10px; padding: 8px 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; }
+  .tbl td { display: grid; grid-template-columns: minmax(5.5em, 38%) minmax(0, 1fr); gap: 10px; padding: 5px 0; border-bottom: 1px dashed var(--line); text-align: left !important; white-space: normal !important; position: static !important; background: none !important; }
+  .tbl td:last-child { border-bottom: 0; }
+  .tbl td::before { content: attr(data-label); color: var(--muted); font-size: 12px; font-weight: 500; }
+  .tbl td.cardhead { display: block; padding: 2px 0 8px; font-weight: 700; color: var(--verd); border-bottom: 1px solid var(--line); }
+  .tbl td.cardhead::before { content: none; }
+  .tbl td:empty { display: none; }
+}
+@media (max-width: 640px) {
+  .a-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .a-tabs.grouped { flex-direction: column; gap: 12px; }
+  .a-group { flex: none !important; }
+  .a-gtabs { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  /* 手機：分組後分頁變多行，拿掉圖示、縮小格子，分頁列不佔掉整個畫面 */
+  .a-tabs.grouped .a-tab { padding: 9px 4px; gap: 0; display: grid; place-items: center; min-height: 44px; }
+  .a-tabs.grouped .a-tab svg { display: none; }
+  .a-tab { font-size: 13px; padding: 10px 4px 8px; }
+}
+/* 角色成長模擬專用（設計者 2026-11-28）：模擬器元件的顏色換成黑金色系 */
+:root, :root:not([data-theme="light"]), :root[data-theme="light"], :root[data-theme="dark"] {
+  --chip-bg: #3A2C1B; --chip-ink: #EBCB8E; --bar: #8A6C3C; --sky: #5A4426;
+  --good: #9CC48A; --bad: #E58A78; --accent-ink: #15110C;
+  --node-on: #2B2117; --node-max: #D9B474; --node-max-ink: #15110C;
+}
+/* 技能樹的分類分頁：選中的用古金 */
+.tabs button[aria-selected="true"] { background: #3A2C1B; color: #F1DEB0; border-color: var(--accent); }
+.node { border-radius: 4px; }
+.node.on .r, .node.on .why { color: var(--muted); }
+/* 「模擬設定」黏在滑進來的精簡分頁列下面（電腦 52px、手機 46px），兩者不重疊 */
+.settings { top: 47px !important; background: #1A1611 !important; border: 1px solid var(--line); border-radius: 6px; padding: 10px 14px; }
+@media (max-width: 640px) { .settings { top: 46px !important; } }
+.panel { background: var(--panel); border-color: var(--line); }
+.verdict, tr.mile td { background: #241D15; }
+.result.ok { background: #241D15; }
+/* 手機：兩欄改成一欄時不要被裡面的輸入框撐寬（不左右滑） */
+@media (max-width: 860px) {
+  .grid2 { grid-template-columns: minmax(0, 1fr) !important; }
+  .gear label { flex-wrap: wrap; min-width: 0; }
+  .gear input, .settings input, .settings select { max-width: 100%; }
+}
+/* 手機：屬性一列太擠，名稱與加減鈕放第一行，說明放第二行（整寬） */
+@media (max-width: 640px) {
+  .attr { grid-template-columns: minmax(0, 1fr) auto; }
+  .attr .nm { grid-column: 1; grid-row: 1; }
+  .attr .ctl { grid-column: 2; grid-row: 1; }
+  .attr .fx { grid-column: 1 / -1; grid-row: 2; }
+}
+/* 手機：裝備加成一項一行，名稱同寬、輸入框對齊 */
+@media (max-width: 640px) {
+  .gear { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .gear label { display: grid; grid-template-columns: 6em minmax(0, 1fr) 1.2em minmax(0, 1fr); align-items: center; gap: 6px; flex-wrap: nowrap; }
+  .gear input, .gear select { width: 100%; box-sizing: border-box; }
+}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500&family=Noto+Serif+TC:wght@500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 <div class="wrap">
   <header>
-    <div class="eyebrow">Aisling - Wellkeeper · 平衡工具 · 直接使用遊戲本身的技能資料與 Combo 判定</div>
-    <h1>角色成長與戰鬥模擬</h1>
-    <p>上半部是 Lv1～70 的成長表。下半部是可以點的模擬器：在技能樹上加點，角色的屬性（攻擊、生命、魔力、防禦、暴擊）與數值會跟著變；另外可以自己加自由點數，並測試三段 Combo。所有數值都會拿來跟你選的怪物比較，可以對照怪物頁確認難度。</p>
+    <div class="a-top"><span>Aisling — Wellkeeper</span><a href="./">返回主網站 ›</a></div>
+    <div class="a-hero"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16"/><path d="M6 17v-3M10 17v-6M14 17v-4M18 17V9"/><path d="M5 11l5-5 4 3 6-6M16 3h4v4"/></svg><h1>角色成長模擬</h1><p class="en">CHARACTER LAB</p><p class="lead">從 Lv1 到 Lv70 的成長，以及可以自己動手的模擬器：在技能樹上加點、分配屬性與裝備，馬上看到角色數值、對手打在你身上的傷害與三段 Combo 的結果。</p></div>
     <p class="small muted">頁面開啟時載入的是示範配置（Lv30、近戰重擊路線），不是任何存檔的資料。玩家沒有普通攻擊：開局免費送的重砍就是預設左鍵。</p>
-    <nav class="toc"><a href="#levels">成長表</a><a href="#skills">技能與屬性</a><a href="#attrs">角色數值與自由點數</a><a href="#combo">Combo 測試</a><a href="#fusion">融合試算</a></nav>
     <p id="loadErr" hidden>模擬程式沒有載入成功，請重新整理頁面。</p>
+    <nav class="toc"><a href="#levels">成長表</a><a href="#skills">技能與屬性</a><a href="#attrs">角色數值與自由點數</a><a href="#combo">Combo 測試</a></nav>
+    <nav class="a-tabs" id="aTabs" role="tablist" aria-label="分頁"></nav>
   </header>
 
   <div class="settings" role="region" aria-label="模擬設定">
@@ -311,38 +512,10 @@ footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line);
     </details>
   </section>
 
-  <section id="fusion">
-    <div class="sec-head">
-      <div class="eyebrow">FusionResolver.preview · v0.5.0 鑲嵌與融合</div>
-      <h2>融合試算</h2>
-      <p>放 2～4 件裝備（飾品以外：武器 → 攻核、防具與盾牌 → 護核；四件同一類 = 純核，屬性多一條）與 0～2 件飾品，用遊戲的融合判定算出按下融合前就確定的部分：核種、核階、核色、元素、條數、印記機率，以及鑲在各部位的主屬性範圍與費用。數值以紫裝為準；鑲在白 / 藍 / 黃 / 橘裝上再乘 ×0.5 / 0.6 / 0.75 / 1.25。</p>
-    </div>
-    <div class="grid2">
-      <div class="panel">
-        <div class="panel-head"><b>合成區（飾品以外的裝備）</b><span class="small muted">橘 / 紅可以選設計；法杖、頭盔可以選元素詞綴</span></div>
-        <div class="fuse-inputs" id="fuseInputs"></div>
-        <div class="panel-head"><b>飾品區（戒指 / 護身符）</b><span class="small muted">只提高印記機率</span></div>
-        <div class="fuse-jewels" id="fuseJewels"></div>
-      </div>
-      <div class="panel" id="fuseResult" aria-live="polite"></div>
-    </div>
-  </section>
-
   <footer>資料與規則取自專案 src/data/ 與 src/game/（MasteryRule、ComboResolver、SkillDescriber 直接打包進本頁）。傷害是期望值估算：不含隨機體型、精英詞綴、樓層抗性、裝備詞綴與傳奇效果。</footer>
 </div>
 
 <script src="sim.js"></script>
-<style>
-.fuse-inputs, .fuse-jewels { display: grid; gap: 8px; }
-.fuse-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-.fuse-row select, .fuse-row input { max-width: 100%; }
-.fuse-row input[type=number] { width: 4.5em; }
-.fuse-head { display: flex; gap: 12px; align-items: center; }
-.fuse-head img { width: 64px; height: 64px; flex: none; }
-.fuse-head b { font-size: 18px; }
-.fuse-list { margin: 0; padding-left: 1.2em; display: grid; gap: 3px; font-size: 14px; }
-.fuse-warn { color: var(--bad, #b5462f); }
-</style>
 <script>
 (function () {
   if (!window.Sim) { document.getElementById('loadErr').hidden = false; return; }
@@ -914,95 +1087,182 @@ footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line);
 })();
 </script>
 
-<script>
-// ── 融合試算（v0.5.0）──
-(function () {
-  if (!window.Sim || !window.Sim.fusionPreview) return;
-  const S = window.Sim;
-  const $ = (id) => document.getElementById(id);
-  const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  const W = [['', '（不放）'], ['sword', '劍'], ['axe', '斧'], ['bow', '弓'], ['staff', '法杖'], ['helmet', '頭盔'], ['armor', '盔甲'], ['gloves', '手套'], ['boots', '鞋子'], ['shield', '盾牌']];
-  const R = [['normal', '白'], ['magic', '藍'], ['rare', '黃'], ['epic', '紫'], ['legendary', '橘'], ['mythic', '紅']];
-  const E = [['', '無元素詞綴'], ['fire', '火焰詞綴'], ['cold', '冰寒詞綴'], ['lightning', '閃電詞綴']];
-  const ER = [['', '無抗性詞綴'], ['fire', '抗火詞綴'], ['cold', '抗寒詞綴'], ['lightning', '絕緣詞綴']];
-  const RN = Object.fromEntries(R);
-  const opt = (list, v) => list.map(([k, l]) => `<option value="${k}"${k === v ? ' selected' : ''}>${l}</option>`).join('');
-  // 預設：SPEC §2.4 的例子
-  const state = {
-    inputs: [
-      { kind: 'sword', rarity: 'rare', itemLevel: 12 },
-      { kind: 'axe', rarity: 'magic', itemLevel: 12 },
-      { kind: 'axe', rarity: 'legendary', itemLevel: 18, legendaryId: 'legendary.mountain_splitter' },
-      { kind: 'staff', rarity: 'normal', itemLevel: 1 },
-    ],
-    jewelry: ['rare', ''],
-  };
-  function drawInputs() {
-    $('fuseInputs').innerHTML = state.inputs.map((x, i) => {
-      const uniques = S.uniqueWeapons.filter((u) => u.kind === x.kind && u.rarity === x.rarity);
-      const showUnique = x.kind && uniques.length && (x.rarity === 'legendary' || x.rarity === 'mythic');
-      return `<div class="fuse-row">
-        <select data-i="${i}" data-k="kind" aria-label="第 ${i + 1} 件裝備">${opt(W, x.kind || '')}</select>
-        <select data-i="${i}" data-k="rarity" aria-label="稀有度"${x.kind ? '' : ' disabled'}>${opt(R, x.rarity)}</select>
-        <label class="small">Lv <input type="number" min="1" max="70" data-i="${i}" data-k="itemLevel" value="${x.itemLevel}"${x.kind ? '' : ' disabled'}></label>
-        ${showUnique ? `<select data-i="${i}" data-k="legendaryId" aria-label="設計">${opt(uniques.map((u) => [u.id, u.name]), x.legendaryId)}</select>` : ''}
-        ${x.kind === 'staff' ? `<select data-i="${i}" data-k="element" aria-label="元素詞綴">${opt(E, x.element || '')}</select>` : ''}
-        ${x.kind === 'helmet' ? `<select data-i="${i}" data-k="element" aria-label="抗性詞綴">${opt(ER, x.element || '')}</select>` : ''}
-      </div>`;
+<script id="doc-tabs-growth">
+// 設計文件頁的分頁與給玩家看的整理（設計者 2026-11-28；scripts/site-docs/apply.py 放進頁面，{"icons": {"levels": "<path d=\"M4 20h16M6 16h12M8 12h8M10 8h4M11 4h2\"/>", "skills": "<circle cx=\"6\" cy=\"6\" r=\"2.5\"/><circle cx=\"18\" cy=\"6\" r=\"2.5\"/><circle cx=\"12\" cy=\"18\" r=\"2.5\"/><path d=\"M8 7.5l3 8M16 7.5l-3 8M8.5 6h7\"/>", "attrs": "<path d=\"M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z\"/>", "combo": "<path d=\"M13 2L4 14h7l-1 8 9-12h-7l1-8Z\"/>", "_": "<path d=\"M5 5h14v14H5Z\"/>"}, "names": {"levels": "成長表", "skills": "技能樹", "attrs": "角色數值", "combo": "Combo 測試"}, "groups": [{"name": "模擬器", "ids": ["skills", "attrs", "combo"]}, {"name": "參考資料", "ids": ["levels"]}], "calc": ["header > p.small.muted"], "keep": ["#supportNote", "#loadErr", ".settings"], "alsoShow": [{"sel": ".settings", "on": ["skills", "attrs", "combo"]}]} 換成各頁的設定）
+// - 每一段一個分頁，網址 #段落 直接打開那一頁；頁尾有上一頁、下一頁
+// - 捲過分頁列之後，頂端滑進一條精簡分頁列（不改動版面，捲動才順）
+// - 不對讀者說明詳細的計算邏輯與開發紀錄：公式、權重換算、試算範例、版本與日期藏起來（原文留在檔案裡）
+// - 手機上表格的每一列變成一張卡片（欄名寫在每個值旁邊），不用左右滑
+(() => {
+  const C = {"icons": {"levels": "<path d=\"M4 20h16M6 16h12M8 12h8M10 8h4M11 4h2\"/>", "skills": "<circle cx=\"6\" cy=\"6\" r=\"2.5\"/><circle cx=\"18\" cy=\"6\" r=\"2.5\"/><circle cx=\"12\" cy=\"18\" r=\"2.5\"/><path d=\"M8 7.5l3 8M16 7.5l-3 8M8.5 6h7\"/>", "attrs": "<path d=\"M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z\"/>", "combo": "<path d=\"M13 2L4 14h7l-1 8 9-12h-7l1-8Z\"/>", "_": "<path d=\"M5 5h14v14H5Z\"/>"}, "names": {"levels": "成長表", "skills": "技能樹", "attrs": "角色數值", "combo": "Combo 測試"}, "groups": [{"name": "模擬器", "ids": ["skills", "attrs", "combo"]}, {"name": "參考資料", "ids": ["levels"]}], "calc": ["header > p.small.muted"], "keep": ["#supportNote", "#loadErr", ".settings"], "alsoShow": [{"sel": ".settings", "on": ["skills", "attrs", "combo"]}]};
+  const sections = [...document.querySelectorAll('.wrap > section[id]')];
+  // 分組（C.groups）：分頁與頁面上的段落都照分組的順序排
+  if (C.groups) {
+    const order = C.groups.flatMap((g) => g.ids);
+    const rank = (s) => (order.includes(s.id) ? order.indexOf(s.id) : order.length);
+    const end = sections[sections.length - 1].nextSibling;
+    sections.sort((a, b) => rank(a) - rank(b));
+    sections.forEach((s) => end.parentNode.insertBefore(s, end));
+  }
+  const toc = Object.fromEntries([...document.querySelectorAll('nav.toc a')].map((a) => [a.getAttribute('href').slice(1), a.textContent]));
+  const bar = document.getElementById('aTabs');
+  const nameOf = (s) => (C.names || {})[s.id] || toc[s.id] || s.querySelector('h2')?.textContent || s.id;
+  const tabBtn = (s) => '<button class="a-tab" role="tab" data-id="' + s.id + '"><svg viewBox="0 0 24 24" aria-hidden="true">' + (C.icons[s.id] || C.icons._) + '</svg><span>' + nameOf(s) + '</span></button>';
+  if (C.groups) {
+    const byId = Object.fromEntries(sections.map((s) => [s.id, s]));
+    bar.classList.add('grouped');
+    bar.innerHTML = C.groups.map((g) => {
+      const list = g.ids.filter((id) => byId[id]);
+      return '<div class="a-group" style="flex:' + list.length + ' 1 0"><div class="a-glabel">' + g.name + '</div><div class="a-gtabs" style="--n:' + list.length + '">' + list.map((id) => tabBtn(byId[id])).join('') + '</div></div>';
     }).join('');
-    $('fuseJewels').innerHTML = state.jewelry.map((r, i) => `<div class="fuse-row"><select data-j="${i}" aria-label="第 ${i + 1} 件飾品">${opt([['', '（不放）'], ...R.slice(1)], r)}</select></div>`).join('');
+  } else bar.innerHTML = sections.map(tabBtn).join('');
+
+  // 分頁列留在原位；捲過之後頂端滑進精簡分頁列（只有名稱，position: fixed），捲回來時再滑出去
+  const header = document.querySelector('.wrap > header');
+  header.after(bar);
+  const sentinel = document.createElement('div');
+  sentinel.className = 'a-sentinel';
+  bar.after(sentinel);
+  const fixed = document.createElement('nav');
+  fixed.className = 'a-fixed';
+  fixed.setAttribute('aria-label', '分頁');
+  fixed.style.setProperty('--n', sections.length);
+  fixed.innerHTML = '<div class="a-fixed-in">' + sections.map((s) => '<button class="a-tab" data-id="' + s.id + '"><span>' + nameOf(s) + '</span></button>').join('') + '<button type="button" class="a-more">切換 ▾</button></div>';
+  document.body.append(fixed);
+  const more = fixed.querySelector('.a-more');
+  const closeMore = () => { fixed.classList.remove('open'); more.textContent = '切換 ▾'; };
+  more.addEventListener('click', () => { const o = fixed.classList.toggle('open'); more.textContent = o ? '收起 ▴' : '切換 ▾'; });
+  new IntersectionObserver(([e]) => { const on = !e.isIntersecting && e.boundingClientRect.top < 0; fixed.classList.toggle('on', on); if (!on) closeMore(); }).observe(sentinel);
+
+  const pager = document.createElement('div');
+  pager.className = 'a-pager';
+  pager.innerHTML = '<button type="button" id="aPrev"></button><button type="button" id="aNext"></button>';
+  document.querySelector('.wrap > footer').before(pager);
+  const ids = sections.map((s) => s.id);
+  const label = (id) => bar.querySelector('[data-id="' + id + '"] span').textContent;
+  function show(id, scroll) {
+    if (!ids.includes(id)) id = ids[0];
+    sections.forEach((s) => s.classList.toggle('a-off', s.id !== id));
+    // 分頁以外、只在某些分頁需要的區塊（例：角色成長模擬的「模擬設定」）
+    (C.alsoShow || []).forEach((x) => document.querySelectorAll(x.sel).forEach((el) => el.classList.toggle('a-off', !x.on.includes(id))));
+    document.querySelectorAll('.a-tab').forEach((t) => t.setAttribute('aria-selected', String(t.dataset.id === id)));
+    const i = ids.indexOf(id);
+    const prev = document.getElementById('aPrev'), next = document.getElementById('aNext');
+    prev.hidden = i === 0; next.hidden = i === ids.length - 1;
+    if (i > 0) { prev.textContent = '‹ ' + label(ids[i - 1]); prev.onclick = () => go(ids[i - 1]); }
+    if (i < ids.length - 1) { next.textContent = label(ids[i + 1]) + ' ›'; next.onclick = () => go(ids[i + 1]); }
+    // 換頁時：已經捲過分頁列的話，捲回原本那排分頁列（完整的分頁在最上面，下面接著新的一段）
+    if (scroll && fixed.classList.contains('on')) bar.scrollIntoView({ block: 'start' });
+    window.dispatchEvent(new Event('resize')); // 讓頁面裡依寬度畫的東西（圖表等）重新量
   }
-  function drawResult() {
-    const inputs = state.inputs.filter((x) => x.kind).map((x) => {
-      const o = { kind: x.kind, rarity: x.rarity, itemLevel: Number(x.itemLevel) || 1 };
-      if ((x.rarity === 'legendary' || x.rarity === 'mythic') && x.legendaryId) o.legendaryId = x.legendaryId;
-      if ((x.kind === 'staff' || x.kind === 'helmet') && x.element) o.element = x.element;
-      return o;
+  function go(id) { closeMore(); if (location.hash !== '#' + id) history.pushState(null, '', '#' + id); show(id, true); }
+  [bar, fixed].forEach((el) => el.addEventListener('click', (e) => { const t = e.target.closest('.a-tab'); if (t) go(t.dataset.id); }));
+  // 頁面裡連到其他段落的連結也切換分頁
+  document.addEventListener('click', (e) => { const a = e.target.closest('a[href^="#"]'); if (a && ids.includes(a.getAttribute('href').slice(1))) { e.preventDefault(); go(a.getAttribute('href').slice(1)); } });
+
+  // 各頁自己的整理：把介紹改寫成給玩家看的版本（改寫過的標 data-keep，下面的規則不會再藏它）
+  const rewrite = (el, text) => { if (el && !el.dataset.keep) { el.textContent = text; el.dataset.keep = '1'; } };
+  // ── 角色成長模擬（設計者 2026-11-28：計算細節、版本與開發紀錄不給玩家看，介紹改寫成給玩家看的版本） ──
+  const intro = (id, i) => document.querySelectorAll('#' + id + ' .sec-head p')[i];
+  rewrite(intro('levels', 0), '每升一級：技能點 +1，生命與魔力上限提高。屬性跟著技能走：每招技能每升一級給 3 點屬性。表中有底色的是解鎖新東西的等級，外框是目前選的等級。');
+  rewrite(intro('levels', 1), '照正常進度大約每層升 1.5 級（第 10 層約 Lv14、第 20 層約 Lv29、第 30 層約 Lv45、第 35 層約 Lv55）。等級比怪物高太多時經驗會越來越少，停在同一層重複刷不划算，要繼續往下走。');
+  rewrite(intro('skills', 0), '每招技能最多 Lv5，再點一次已選的技能也會升級；每升一級給 3 點屬性，下面那一排跟著變。灰色虛線的技能目前還不能學，格子下方寫著原因。');
+  rewrite(intro('combo', 0), '依序選連段（Q～R）的三招，看這組連段是否成立、觸發哪一個組合技、每一招拿到多少加成，以及打在對手身上的傷害。技能等級越高，加成越大。');
+  // 裝備加成、防禦的小字說明：拿掉版本號與減傷公式
+  document.querySelectorAll('#attrs p.small.muted').forEach((p) => {
+    if (/^\s*數值欄填所有裝備/.test(p.textContent)) rewrite(p, '數值欄填所有裝備加起來的總和（武器傷害、法術強度與詞綴）。武器種類的內建加成會自動算進去；武器不能用的技能，會在技能說明與 Combo 測試標出來。百分比欄只填詞綴。預設為空手、沒有裝備；裝上的 Support 被動也會算進來。');
+    else if (/^\s*只計普通攻擊/.test(p.textContent)) rewrite(p, '只計對手的普通攻擊，特殊技能更危險。越深的樓層，同樣的防禦擋掉的比例越低；防禦只擋物理傷害，元素傷害要看抗性。');
+  });
+  // 頁尾：不寫程式的檔名
+  rewrite(document.querySelector('.wrap > footer'), '數值直接用遊戲本身的資料與規則計算。傷害是期望值估算，實際會因怪物體型、精英、抗性與裝備詞綴而不同。');
+  // 模擬器即時產生的說明也不寫計算細節與開發紀錄（內容會隨操作重畫，所以有變動就重新清一次）
+  const DYN = [
+    [/[；;]?\s*(延遲|地面效果|多發投射物)[^。]*?計[^。]*。/g, ''],
+    [/[（(]combo\.[a-z0-9_.]+[）)]/g, ''],
+    [/[（(]未實作[）)]/g, ''],
+    [/[（(]M\d+\s*後[^（）()]*[）)]/g, ''],
+    [/」\s*×\s*0\.\d+/g, '」'],
+    [/[（(]每件[^（）()]*[）)]/g, ''],
+    [/，?從\s*\d+\s*條中均等抽、?不重複/g, ''],
+  ];
+  const cleanDynamic = () => {
+    const w = document.createTreeWalker(document.querySelector('.wrap'), NodeFilter.SHOW_TEXT);
+    for (let n = w.nextNode(); n; n = w.nextNode()) {
+      if (n.parentElement.closest('script, style')) continue;
+      let t = n.textContent;
+      for (const [re, to] of DYN) t = t.replace(re, to);
+      if (t !== n.textContent) n.textContent = t;
+    }
+  };
+  cleanDynamic();
+  new MutationObserver(() => { clearTimeout(window.__dyn); window.__dyn = setTimeout(cleanDynamic, 30); }).observe(document.querySelector('.wrap'), { childList: true, subtree: true, characterData: true });
+  // 預設是空的技能樹，讓玩家自己點（設計者 2026-11-28；「套用示範配置」按鈕保留）
+  document.getElementById('treeReset')?.click();
+  // 技能樹分頁最上面：模擬器的用法，四步（後兩步可以直接點過去）
+  const skillHead = document.querySelector('#skills .sec-head');
+  if (skillHead && !document.querySelector('#skills .a-flow')) {
+    const flow = document.createElement('ol');
+    flow.className = 'a-flow a-flow-4';
+    flow.style.setProperty('--n', 4);
+    flow.innerHTML =
+      '<li><b>設定角色</b><span>在上方選角色等級、對手與樓層，所有分頁共用</span></li>' +
+      '<li><b>學技能</b><span>點技能格學習或升級，右邊馬上看到攻擊力與技能說明</span></li>' +
+      '<li><b>配屬性與裝備</b><span>到<a href="#attrs">角色數值</a>分配自由點數、填入裝備，看承受得住多少傷害</span></li>' +
+      '<li><b>排連段</b><span>到<a href="#combo">Combo 測試</a>排三招連段，看觸發哪一個組合技</span></li>';
+    skillHead.append(flow);
+  }
+
+
+  // 不對讀者說明詳細的計算邏輯：公式（＝ 加上 × ÷ Σ ^）、版本、開發日期、程式檔名
+  const hideCalc = () => {
+    document.querySelectorAll((C.calc || []).join(',') || '#__none').forEach((e) => e.classList.add('a-calc'));
+    const keep = (e) => e.dataset.keep || e.closest('[data-keep]') || (C.keep || []).some((sel) => e.matches(sel) || e.closest(sel));
+    document.querySelectorAll('.wrap p, .wrap li').forEach((e) => {
+      if (keep(e) || e.closest('.a-hero')) return;
+      const t = e.textContent;
+      if ((/[=＝]/.test(t) && /[×÷Σ^]/.test(t)) || /設計者 20\d\d|^\s*v0\.\d|^\s*金幣尺度|累積取得機率|\.ts[）)；]|src\//.test(t)) e.classList.add('a-calc');
     });
-    const jewelry = state.jewelry.filter(Boolean);
-    const pv = S.fusionPreview(inputs, jewelry);
-    const box = $('fuseResult');
-    if (pv.problems.length || !pv.types.length) {
-      box.innerHTML = `<b>還不能融合</b><ul class="fuse-list">${pv.problems.map((p) => `<li>${esc(p)}</li>`).join('')}</ul>`;
-      return;
+    // 開發註記：「（……設計者 2026-11-21……）」「（v0.4.0 ……）」「（2026-11-21）」這類括號整段拿掉
+    const walker = document.createTreeWalker(document.querySelector('.wrap'), NodeFilter.SHOW_TEXT);
+    for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+      if (n.parentElement.closest('script, style')) continue;
+      const t = n.textContent.replace(/[（(][^（）()]*(設計者|20\d\d-\d\d-\d\d|v\d+\.\d+\.\d+|V\d\.\d)[^（）()]*[）)]/g, '');
+      if (t !== n.textContent) n.textContent = t;
     }
-    const name = pv.mixed ? `混核（${pv.typeNames.map((n) => n.replace('核', '')).join('＋')}）` : pv.typeNames[0];
-    const votes = Object.entries(pv.votes).map(([w, n]) => `${Object.fromEntries(W)[w]} ${n}`).join('、');
-    const slotNames = { weapon: '武器', helmet: '頭盔', armor: '衣裝', gloves: '手套', boots: '鞋子', shield: '盾牌' };
-    const pct = (v) => `${Math.round(v * 100)}%`;
-    box.innerHTML = `
-      <div class="fuse-head">${pv.icon ? `<img src="${pv.icon}" alt="">` : ''}<div><b>${esc(name)}${pv.elementLabel ? `（${pv.elementLabel}）` : pv.hasElement ? '（元素隨機）' : ''}</b><div class="small muted">${RN[pv.rarity]}核 · T${pv.tier} · ${pv.lineCount} 條${pv.pure ? ' · 純核' : ''}</div></div></div>
-      <ul class="fuse-list">
-        <li>核種：${esc(votes)}${pv.mixed ? '（平手 → 混核，主屬性 ×0.7）' : ''}</li>
-        <li>核階：平均物品等級 ${Math.round(pv.avgItemLevel * 10) / 10}</li>
-        <li>核色：權重 ${pv.weight}${pv.next ? `，距${RN[pv.next.rarity]}還差 ${pv.next.gap}` : ''}</li>
-        <li>印記：${pv.brandLines.length ? `${pct(pv.brand.chance)}（每件橘裝 ${pct(pv.brand.baseChance)}${pv.brand.jewelryBoost ? ` ＋ 飾品 ${pct(pv.brand.jewelryBoost)}` : ''}${pv.brand.capped ? '，已達上限' : ''}）` : '沒有（要投入橘色裝備）'}</li>
-        ${pv.brandLines.map((b) => `<li class="small">可能印記：${esc(b.name)}「${esc(b.text)}」× 0.7</li>`).join('')}
-      </ul>
-      <div class="tbl"><table><thead><tr><th>鑲在</th><th>主屬性範圍（紫裝）</th></tr></thead><tbody>${pv.slotLines.map((s) => `<tr><td class="rowh">${slotNames[s.slot]}</td><td class="small">${s.lines.map(esc).join('<br>＋ ')}</td></tr>`).join('')}</tbody></table></div>
-      <p class="small muted">副屬性（${pv.lineCount - 1} 條，從 ${pv.secondaryLines.length} 條中均等抽、不重複）：${pv.secondaryLines.map(esc).join('、')}</p>
-      ${pv.warnings.length ? `<ul class="fuse-list fuse-warn">${pv.warnings.map((w) => `<li>⚠ ${esc(w)}</li>`).join('')}</ul>` : ''}
-      <p><b>費用</b>：金幣 ${pv.cost.gold.toLocaleString()}${pv.cost.materials.weaponEssence ? `・武器精華 ${pv.cost.materials.weaponEssence}` : ''}${pv.cost.materials.armorEssence ? `・防具精華 ${pv.cost.materials.armorEssence}` : ''}</p>`;
-  }
-  function onChange(e) {
-    const t = e.target;
-    if (t.dataset.j !== undefined) state.jewelry[Number(t.dataset.j)] = t.value;
-    else if (t.dataset.i !== undefined) {
-      const x = state.inputs[Number(t.dataset.i)];
-      x[t.dataset.k] = t.dataset.k === 'itemLevel' ? Number(t.value) : t.value;
-      if (t.dataset.k === 'kind' || t.dataset.k === 'rarity') {
-        const first = S.uniqueWeapons.find((u) => u.kind === x.kind && u.rarity === x.rarity);
-        x.legendaryId = first ? first.id : '';
-        drawInputs();
-      }
+    // 小標題括號裡的計算細節也拿掉
+    document.querySelectorAll('.wrap > section h3').forEach((h) => {
+      for (const n of h.childNodes) if (n.nodeType === 3) n.textContent = n.textContent.replace(/[（(][^（）()]*(算出|判定|擲骰|範圍)[^（）()]*[）)]/g, '');
+    });
+    // 小標題底下的內容全藏起來時，小標題也一起藏
+    document.querySelectorAll('.wrap > section h3').forEach((h) => {
+      const sib = [];
+      for (let n = h.nextElementSibling; n && n.tagName !== 'H3'; n = n.nextElementSibling) sib.push(n);
+      if (sib.length && sib.every((n) => n.classList.contains('a-calc'))) h.classList.add('a-calc');
+    });
+  };
+  hideCalc();
+
+  // 手機的卡片表格：每一格加上欄名（data-label）；第一欄當卡片標題。表格會被重畫，有變動就重新標
+  const labelCells = (table) => {
+    const head = table.tHead ? table.tHead.rows[table.tHead.rows.length - 1] : null;
+    if (!head) return;
+    const names = [];
+    for (const th of head.cells) for (let k = 0; k < (th.colSpan || 1); k++) names.push(th.textContent.trim());
+    for (const tr of table.tBodies[0]?.rows ?? []) {
+      let col = 0;
+      [...tr.cells].forEach((td, i) => {
+        if (!td.hasAttribute('data-label')) td.setAttribute('data-label', names[col] || '');
+        if (i === 0) td.classList.add('cardhead');
+        col += td.colSpan || 1;
+      });
     }
-    drawResult();
-  }
-  $('fuseInputs').addEventListener('change', onChange);
-  $('fuseInputs').addEventListener('input', (e) => { if (e.target.dataset.k === 'itemLevel') onChange(e); });
-  $('fuseJewels').addEventListener('change', onChange);
-  drawInputs();
-  drawResult();
+  };
+  const labelAll = () => document.querySelectorAll('.tbl table').forEach(labelCells);
+  labelAll();
+  new MutationObserver(() => { clearTimeout(window.__lbl); window.__lbl = setTimeout(labelAll, 50); }).observe(document.querySelector('.wrap'), { childList: true, subtree: true });
+  addEventListener('popstate', () => show(location.hash.slice(1), false));
+  show(location.hash.slice(1), false);
+  if (location.hash) requestAnimationFrame(() => bar.scrollIntoView({ block: 'start' }));
 })();
 </script>
 </body></html>

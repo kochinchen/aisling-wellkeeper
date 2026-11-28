@@ -133,10 +133,11 @@ ul.rules { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
 .relic-talk p { margin: 4px 0 0; }
 </style>
 
-<style id="armory-theme">
-/* 裝備圖鑑的新外觀（設計者 2026-11-28）：和公開網站、怪物圖鑑同一套黑金色系，主色古金色
-   （設計者：全站主色維持古金色，和稀有度的黃、橘色階差很多，不用怕撞色）。稀有度顏色本身不改 */
-:root, :root[data-theme="light"], :root[data-theme="dark"] {
+<style id="doc-theme-items">
+/* 設計文件頁的共用外觀（設計者 2026-11-28）：和公開網站、怪物圖鑑同一套黑金色系，主色古金色
+   （全站主色維持古金色，和稀有度的黃、橘色階差很多，不用怕撞色）。稀有度顏色本身不改。
+   用在裝備圖鑑、角色成長模擬（scripts/site-docs/apply.py），各頁專用的樣式在 pages/<頁>.css */
+:root, :root:not([data-theme="light"]), :root[data-theme="light"], :root[data-theme="dark"] {
   color-scheme: dark;
   --bg: #15110C; --panel: #1D1812; --soft: #1A1611; --warm: #221D17;
   --ink: #DED1BA; --ink-2: #D9B474; --muted: #A38B66; --line: #493A28; --accent: #D9B474;
@@ -182,12 +183,41 @@ header nav.toc { display: none; }
 .a-tab:hover { border-color: var(--muted); }
 .a-tab[aria-selected="true"] { background: var(--verd-dim); border-color: var(--verd); color: var(--verd); }
 .a-tab[aria-selected="true"] span { color: #F1DEB0; }
+/* 分組的分頁列（分頁多時依閱讀順序分成幾群，每群上方一行小標） */
+.a-tabs.grouped { display: flex; gap: 16px; }
+.a-group { display: grid; gap: 8px; align-content: start; min-width: 0; }
+.a-glabel { display: flex; align-items: center; gap: 10px; font-size: 12px; letter-spacing: .12em; color: var(--muted); }
+.a-glabel::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.a-gtabs { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 8px; }
+.a-gtabs .a-tab { height: 100%; box-sizing: border-box; }
+/* 「怎麼用」的步驟列：一步一格，格子之間有箭頭 */
+.a-flow { list-style: none; margin: 18px 0 0; padding: 0; display: grid; grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; }
+.a-flow li { position: relative; display: grid; gap: 4px; align-content: start; padding: 14px 20px; }
+.a-flow li + li { border-left: 1px solid var(--line); }
+.a-flow li + li::before { content: "›"; position: absolute; left: -10px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; display: grid; place-items: center; font-size: 13px; line-height: 1; color: var(--verd); background: var(--bg); border: 1px solid var(--line); border-radius: 50%; }
+.a-flow b { color: var(--verd); font: 700 16px/1.3 "Noto Serif TC", serif; }
+.a-flow span { color: var(--muted); font-size: 13px; line-height: 1.6; }
+.a-flow a { color: var(--verd); }
+@media (max-width: 860px) {
+  .a-flow { grid-template-columns: minmax(0, 1fr); }
+  .a-flow li + li { border-left: 0; border-top: 1px solid var(--line); }
+  .a-flow li + li::before { left: 50%; top: -10px; transform: translateX(-50%) rotate(90deg); }
+  /* 四步的在窄螢幕排成 2 × 2，不把主要內容推得太遠 */
+  .a-flow-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .a-flow-4 li { padding: 10px 12px; }
+  .a-flow-4 li + li { border-top: 0; }
+  .a-flow-4 li:nth-child(n+3) { border-top: 1px solid var(--line); }
+  .a-flow-4 li:nth-child(even) { border-left: 1px solid var(--line); }
+  .a-flow-4 li + li::before { display: none; }
+  .a-flow-4 b { font-size: 14px; }
+  .a-flow-4 span { font-size: 12px; }
+}
 /* 捲過分頁列之後，頂端滑進一條精簡分頁列（只有名稱）；只用位移與透明度動畫，不改版面、不用毛玻璃（設計者 2026-11-28：捲動要順） */
 .a-sentinel { height: 1px; margin-top: -1px; }
 .a-fixed { position: fixed; z-index: 30; left: 0; right: 0; top: 0; background: #15110C; border-bottom: 1px solid var(--line); box-shadow: 0 8px 18px rgb(0 0 0 / 45%);
   transform: translateY(-110%); visibility: hidden; transition: transform 220ms ease, visibility 0s linear 220ms; will-change: transform; }
 .a-fixed.on { transform: none; visibility: visible; transition: transform 220ms ease; }
-.a-fixed-in { max-width: 1200px; margin: 0 auto; padding: 6px 16px; display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 6px; }
+.a-fixed-in { max-width: 1200px; margin: 0 auto; padding: 6px 16px; display: grid; grid-template-columns: repeat(var(--n, 9), minmax(0, 1fr)); gap: 6px; }
 .a-fixed .a-tab { padding: 7px 4px; gap: 0; }
 .a-fixed .a-more { display: none; }
 /* 手機：精簡列只留目前這一頁＋「切換 ▾」，展開時蓋在內容上（不推動內容） */
@@ -200,7 +230,7 @@ header nav.toc { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .a-fixed, .a-fixed.on { transition: none; } }
 section { padding-top: 26px; }
-section.a-off { display: none !important; }
+section.a-off, .a-off { display: none !important; }
 .a-pager { display: flex; justify-content: space-between; gap: 12px; margin-top: 30px; padding-top: 16px; border-top: 1px solid var(--line); }
 .a-pager button { padding: 8px 14px; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 4px; cursor: pointer; font-size: 14px; }
 .a-pager button:hover { border-color: var(--verd); color: var(--verd); }
@@ -231,14 +261,6 @@ footer { border-top-color: var(--line); color: var(--muted); text-align: center;
 /* 小標題：左邊一條古金色線，和下面的內容分開 */
 section h3 { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-size: 17px; }
 section h3::before { content: ""; width: 3px; height: 1em; background: var(--verd); border-radius: 2px; }
-/* 「賣價、拆解、飛昇、光芒」：主題很多，改成一欄排滿寬度，表格不再被擠到要橫向捲動 */
-#economy .two { grid-template-columns: minmax(0, 1fr); gap: 14px; }
-#economy .two > div { gap: 10px !important; padding: 18px 20px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; }
-#economy .formula { white-space: normal; }
-/* 稀有度規則：六欄要一次看完，文字可以換行（不要橫向捲動） */
-#rarityTable { table-layout: fixed; }
-#rarityTable th, #rarityTable td { white-space: normal; }
-#rarityTable td.rowh, #rarityTable tr > :first-child { width: 15em; }
 /* 說明清單（物品等級與詞綴階級）改成卡片 */
 ul.notes, ul.rules { list-style: none; padding: 0; gap: 8px; }
 ul.notes li, ul.rules li { padding: 10px 14px; background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--verd); border-radius: 4px; }
@@ -267,7 +289,72 @@ th, td { padding: 7px 9px; }
 }
 @media (max-width: 640px) {
   .a-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .a-tabs.grouped { flex-direction: column; gap: 12px; }
+  .a-group { flex: none !important; }
+  .a-gtabs { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  /* 手機：分組後分頁變多行，拿掉圖示、縮小格子，分頁列不佔掉整個畫面 */
+  .a-tabs.grouped .a-tab { padding: 9px 4px; gap: 0; display: grid; place-items: center; min-height: 44px; }
+  .a-tabs.grouped .a-tab svg { display: none; }
   .a-tab { font-size: 13px; padding: 10px 4px 8px; }
+}
+/* 裝備圖鑑專用 */
+/* 「賣價、拆解、飛昇、光芒」：主題很多，改成一欄排滿寬度，表格不再被擠到要橫向捲動 */
+#economy .two { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+#economy .two > div { gap: 10px !important; padding: 18px 20px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; }
+#economy .formula { white-space: normal; }
+/* 稀有度規則：六欄要一次看完，文字可以換行（不要橫向捲動） */
+#rarityTable { table-layout: fixed; }
+#rarityTable th, #rarityTable td { white-space: normal; }
+#rarityTable td.rowh, #rarityTable tr > :first-child { width: 15em; }
+/* 融合試算（從角色成長模擬搬來，放在熔核頁最下面）：左邊放裝備、右邊看結果 */
+#fusion .grid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 20px; align-items: start; }
+#fusion .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 16px; display: grid; gap: 12px; align-content: start; }
+#fusion .panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+#fusion .panel-head b, #fusion .fuse-head b { color: var(--verd); }
+#fusion select, #fusion input { background: #1A1611; color: var(--ink); border: 1px solid var(--line); border-radius: 4px; padding: 5px 6px; font: inherit; font-size: 14px; }
+#fusion .fuse-warn { color: #E58A78; }
+@media (max-width: 860px) { #fusion .grid2 { grid-template-columns: minmax(0, 1fr); } }
+/* 手機：融合結果的兩欄表很短，不拆成卡片，部位與屬性並排一行 */
+@media (max-width: 640px) {
+  #fuseResult .tbl tr { display: grid; grid-template-columns: 3.5em minmax(0, 1fr); gap: 10px; margin-bottom: 6px; padding: 8px 10px; }
+  #fuseResult .tbl td, #fuseResult .tbl td.cardhead { display: block; padding: 0; border: 0; }
+  #fuseResult .tbl td::before { content: none; }
+}
+/* ── 熔核頁的版面：三步驟、小節捷徑、編號小節、兩欄、說明框 ── */
+.a-subnav { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 0; }
+.a-subnav a { display: inline-flex; align-items: baseline; gap: 6px; padding: 5px 12px; color: var(--muted); font-size: 13px; text-decoration: none; border: 1px solid var(--line); border-radius: 999px; }
+.a-subnav a:hover { color: var(--verd); border-color: var(--verd); }
+.a-subnav a b { font: 500 12px/1 "Cinzel", Georgia, serif; color: var(--verd); }
+.a-block { margin-top: 44px; padding-top: 24px; border-top: 1px solid var(--line); scroll-margin-top: 64px; }
+.a-bhead { display: flex; gap: 16px; align-items: baseline; margin-bottom: 18px; }
+.a-no { flex: none; font: 500 24px/1 "Cinzel", Georgia, serif; color: var(--verd); opacity: .7; letter-spacing: .04em; }
+#cores .a-bhead h3 { margin: 0; font-size: 20px; }
+#cores .a-bhead h3::before { content: none; }
+.a-bhead p { margin: 6px 0 0; max-width: 62em; color: var(--muted); font-size: 14px; line-height: 1.7; }
+.a-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; align-items: start; }
+.a-cols.a-gemrules { grid-template-columns: max-content minmax(0, 1fr); }
+.a-col { display: grid; gap: 10px; align-content: start; min-width: 0; }
+#cores h4 { margin: 0; color: var(--ink-2); font: 700 15px/1.4 "Noto Serif TC", serif; letter-spacing: .04em; }
+.a-col .gem-row { margin: 0; }
+.a-callout { display: grid; gap: 6px; margin-top: 22px; padding: 14px 18px; background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--verd); border-radius: 6px; }
+.a-callout p { margin: 0; }
+#cores .a-block > .tbl + p, #cores .a-block > p + .tbl { margin-top: 12px; }
+@media (max-width: 1000px) { .a-cols.a-gemrules { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 860px) {
+  .a-cols { grid-template-columns: minmax(0, 1fr); }
+      }
+/* 第 06 節的融合試算 */
+#fusion.a-sub { margin: 0; padding: 0; border: 0; }
+@media (max-width: 640px) {
+  /* 編號與標題同一行，介紹文字用整個寬度 */
+  .a-bhead { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 12px; align-items: baseline; }
+  .a-bhead > div { display: contents; }
+  .a-bhead p { grid-column: 1 / -1; }
+  .a-no { font-size: 20px; }
+  /* 核種圖示：名稱一行、T1～T5 一排五個 */
+  #cores .gem-line { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px 6px; }
+  #cores .gem-label { grid-column: 1 / -1; width: auto; color: var(--ink-2); }
+  #cores .gem-row { gap: 14px; }
 }
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500&family=Noto+Serif+TC:wght@500;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
@@ -436,6 +523,24 @@ th, td { padding: 7px 9px; }
       </tbody>
     </table></div>
     <p class="small muted">武器得到的法術強度 = 法杖的法術強度（含主倍率與法術強度詞綴，不算法杖上的熔核）× 繼承率，在範圍內擲骰。重新灌注時，繼承率與法杖來源各自和原本的取較高的，所以不會變差，但投入的法杖與純核照樣消耗。武器自己的傷害不受影響。灌注的法術強度不被主倍率與熔核放大，而法杖上的熔核會放大法杖自己的法術強度（紫法杖鑲兩顆 T5 熔核，倍率從 ×2.8 變成 ×4.4），所以繼承率 100% 的劍仍比不上認真養的法杖。</p>
+<!-- fusion:start -->
+  <div id="fusion" class="a-sub">
+    <div class="sec-head">
+      <div class="eyebrow">FusionResolver.preview · v0.5.0 鑲嵌與融合</div>
+      <h3>融合試算</h3>
+      <p>放 2～4 件裝備（飾品以外：武器 → 攻核、防具與盾牌 → 護核；四件同一類 = 純核，屬性多一條）與 0～2 件飾品，用遊戲的融合判定算出按下融合前就確定的部分：核種、核階、核色、元素、條數、印記機率，以及鑲在各部位的主屬性範圍與費用。數值以紫裝為準；鑲在白 / 藍 / 黃 / 橘裝上再乘 ×0.5 / 0.6 / 0.75 / 1.25。</p>
+    </div>
+    <div class="grid2">
+      <div class="panel">
+        <div class="panel-head"><b>合成區（飾品以外的裝備）</b><span class="small muted">橘 / 紅可以選設計；法杖、頭盔可以選元素詞綴</span></div>
+        <div class="fuse-inputs" id="fuseInputs"></div>
+        <div class="panel-head"><b>飾品區（戒指 / 護身符）</b><span class="small muted">只提高印記機率</span></div>
+        <div class="fuse-jewels" id="fuseJewels"></div>
+      </div>
+      <div class="panel" id="fuseResult" aria-live="polite"></div>
+    </div>
+  </div>
+<!-- fusion:end -->
   </section>
 
 
@@ -859,27 +964,37 @@ const G = {"rarities":[{"id":"normal","label":"普通","color":"#e8e2d4","affixe
     `<tr><td class="small">${e.label}</td><td><span class="core-name">${img(gem(e.types, e.tier, e.rarity, e.element ?? undefined, false), 28)}${e.core}${e.pure ? '・純核' : ''}</span></td><td class="n">T${e.tier}</td><td class="rar r-${e.rarity}">${SHORT[e.rarity]}</td><td class="n">${e.lines}</td><td class="n">${e.brand ? e.brand + '%' : '—'}</td><td class="n">${e.gold.toLocaleString()} / ${e.essenceText}</td></tr>`).join('')}</tbody>`;
 })();
 </script>
-<script id="armory-tabs">
-// 裝備圖鑑的分頁（設計者 2026-11-28）：每一段一個分頁，網址 #rarity、#drops… 直接打開那一頁；頁尾有上一頁、下一頁
+<script id="doc-tabs-items">
+// 設計文件頁的分頁與給玩家看的整理（設計者 2026-11-28；scripts/site-docs/apply.py 放進頁面，{"icons": {"rarity": "<path d=\"M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.5 6.7 19.4l1.2-6L3.4 9.3l6-.7Z\"/>", "drops": "<path d=\"M12 3s6 6.4 6 11a6 6 0 0 1-12 0c0-4.6 6-11 6-11Z\"/>", "tiers": "<path d=\"M4 20h16M6 16h12M8 12h8M10 8h4M11 4h2\"/>", "bases": "<path d=\"M14.5 4l5.5 5.5-9 9H5.5V13Z\"/><path d=\"M12 6.5l5.5 5.5\"/>", "affixes": "<path d=\"M5 5h14v14H5Z\"/><path d=\"M9 9h6M9 12h6M9 15h4\"/>", "uniques": "<path d=\"M12 2l3 6 6.5 1-4.7 4.6 1.1 6.5L12 17l-5.9 3.1 1.1-6.5L2.5 9l6.5-1Z\"/><circle cx=\"12\" cy=\"11.5\" r=\"2\"/>", "cores": "<path d=\"M12 3l7 4.5v9L12 21l-7-4.5v-9Z\"/><path d=\"M12 3v18M5 7.5l14 9M19 7.5l-14 9\"/>", "economy": "<circle cx=\"12\" cy=\"12\" r=\"8\"/><path d=\"M14.5 9.5c-.6-.9-1.5-1.3-2.5-1.3-1.5 0-2.5.8-2.5 1.9 0 2.6 5 1.4 5 4 0 1.1-1 1.9-2.5 1.9-1.1 0-2-.4-2.6-1.3M12 6.5v1.7M12 15.8v1.7\"/>", "relics": "<path d=\"M8 3h8l2 5-6 13L6 8Z\"/><path d=\"M6 8h12M10 3l-1 5 3 13M14 3l1 5-3 13\"/>", "_": "<path d=\"M5 5h14v14H5Z\"/>"}, "names": {"cores": "熔核"}, "groups": [{"name": "認識裝備", "ids": ["rarity", "bases", "affixes", "uniques"]}, {"name": "取得", "ids": ["drops", "tiers", "relics"]}, {"name": "強化與處理", "ids": ["cores", "economy"]}], "calc": [".formula", "#drops p.small.muted", "#tiers ul.notes", "#colorNote", "#coreNote", "#sellNote", "#rerollNote"], "keep": [".sec-head", "#socketNote"]} 換成各頁的設定）
+// - 每一段一個分頁，網址 #段落 直接打開那一頁；頁尾有上一頁、下一頁
+// - 捲過分頁列之後，頂端滑進一條精簡分頁列（不改動版面，捲動才順）
+// - 不對讀者說明詳細的計算邏輯與開發紀錄：公式、權重換算、試算範例、版本與日期藏起來（原文留在檔案裡）
+// - 手機上表格的每一列變成一張卡片（欄名寫在每個值旁邊），不用左右滑
 (() => {
-  const ICON = {
-    rarity: '<path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.5 6.7 19.4l1.2-6L3.4 9.3l6-.7Z"/>',
-    drops: '<path d="M12 3s6 6.4 6 11a6 6 0 0 1-12 0c0-4.6 6-11 6-11Z"/>',
-    tiers: '<path d="M4 20h16M6 16h12M8 12h8M10 8h4M11 4h2"/>',
-    bases: '<path d="M14.5 4l5.5 5.5-9 9H5.5V13Z"/><path d="M12 6.5l5.5 5.5"/>',
-    affixes: '<path d="M5 5h14v14H5Z"/><path d="M9 9h6M9 12h6M9 15h4"/>',
-    uniques: '<path d="M12 2l3 6 6.5 1-4.7 4.6 1.1 6.5L12 17l-5.9 3.1 1.1-6.5L2.5 9l6.5-1Z"/><circle cx="12" cy="11.5" r="2"/>',
-    cores: '<path d="M12 3l7 4.5v9L12 21l-7-4.5v-9Z"/><path d="M12 3v18M5 7.5l14 9M19 7.5l-14 9"/>',
-    economy: '<circle cx="12" cy="12" r="8"/><path d="M14.5 9.5c-.6-.9-1.5-1.3-2.5-1.3-1.5 0-2.5.8-2.5 1.9 0 2.6 5 1.4 5 4 0 1.1-1 1.9-2.5 1.9-1.1 0-2-.4-2.6-1.3M12 6.5v1.7M12 15.8v1.7"/>',
-    relics: '<path d="M8 3h8l2 5-6 13L6 8Z"/><path d="M6 8h12M10 3l-1 5 3 13M14 3l1 5-3 13"/>',
-  };
-  const NAME = { cores: '熔核' };
-  const toc = Object.fromEntries([...document.querySelectorAll('nav.toc a')].map((a) => [a.getAttribute('href').slice(1), a.textContent]));
+  const C = {"icons": {"rarity": "<path d=\"M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.5 6.7 19.4l1.2-6L3.4 9.3l6-.7Z\"/>", "drops": "<path d=\"M12 3s6 6.4 6 11a6 6 0 0 1-12 0c0-4.6 6-11 6-11Z\"/>", "tiers": "<path d=\"M4 20h16M6 16h12M8 12h8M10 8h4M11 4h2\"/>", "bases": "<path d=\"M14.5 4l5.5 5.5-9 9H5.5V13Z\"/><path d=\"M12 6.5l5.5 5.5\"/>", "affixes": "<path d=\"M5 5h14v14H5Z\"/><path d=\"M9 9h6M9 12h6M9 15h4\"/>", "uniques": "<path d=\"M12 2l3 6 6.5 1-4.7 4.6 1.1 6.5L12 17l-5.9 3.1 1.1-6.5L2.5 9l6.5-1Z\"/><circle cx=\"12\" cy=\"11.5\" r=\"2\"/>", "cores": "<path d=\"M12 3l7 4.5v9L12 21l-7-4.5v-9Z\"/><path d=\"M12 3v18M5 7.5l14 9M19 7.5l-14 9\"/>", "economy": "<circle cx=\"12\" cy=\"12\" r=\"8\"/><path d=\"M14.5 9.5c-.6-.9-1.5-1.3-2.5-1.3-1.5 0-2.5.8-2.5 1.9 0 2.6 5 1.4 5 4 0 1.1-1 1.9-2.5 1.9-1.1 0-2-.4-2.6-1.3M12 6.5v1.7M12 15.8v1.7\"/>", "relics": "<path d=\"M8 3h8l2 5-6 13L6 8Z\"/><path d=\"M6 8h12M10 3l-1 5 3 13M14 3l1 5-3 13\"/>", "_": "<path d=\"M5 5h14v14H5Z\"/>"}, "names": {"cores": "熔核"}, "groups": [{"name": "認識裝備", "ids": ["rarity", "bases", "affixes", "uniques"]}, {"name": "取得", "ids": ["drops", "tiers", "relics"]}, {"name": "強化與處理", "ids": ["cores", "economy"]}], "calc": [".formula", "#drops p.small.muted", "#tiers ul.notes", "#colorNote", "#coreNote", "#sellNote", "#rerollNote"], "keep": [".sec-head", "#socketNote"]};
   const sections = [...document.querySelectorAll('.wrap > section[id]')];
+  // 分組（C.groups）：分頁與頁面上的段落都照分組的順序排
+  if (C.groups) {
+    const order = C.groups.flatMap((g) => g.ids);
+    const rank = (s) => (order.includes(s.id) ? order.indexOf(s.id) : order.length);
+    const end = sections[sections.length - 1].nextSibling;
+    sections.sort((a, b) => rank(a) - rank(b));
+    sections.forEach((s) => end.parentNode.insertBefore(s, end));
+  }
+  const toc = Object.fromEntries([...document.querySelectorAll('nav.toc a')].map((a) => [a.getAttribute('href').slice(1), a.textContent]));
   const bar = document.getElementById('aTabs');
-  bar.innerHTML = sections.map((s) => '<button class="a-tab" role="tab" data-id="' + s.id + '"><svg viewBox="0 0 24 24" aria-hidden="true">' + (ICON[s.id] || ICON.affixes) + '</svg><span>' + (toc[s.id] || NAME[s.id] || s.querySelector('h2')?.textContent || s.id) + '</span></button>').join('');
-  // 分頁列留在原位；捲過它之後，畫面頂端滑進一條精簡分頁列（只有名稱，position: fixed），捲回來時再滑出去。
-  // 全程不改動版面（設計者 2026-11-28：sticky 縮放會讓捲動卡頓）。精簡列與原本那排的按鈕共用同一個點擊處理
+  const nameOf = (s) => (C.names || {})[s.id] || toc[s.id] || s.querySelector('h2')?.textContent || s.id;
+  const tabBtn = (s) => '<button class="a-tab" role="tab" data-id="' + s.id + '"><svg viewBox="0 0 24 24" aria-hidden="true">' + (C.icons[s.id] || C.icons._) + '</svg><span>' + nameOf(s) + '</span></button>';
+  if (C.groups) {
+    const byId = Object.fromEntries(sections.map((s) => [s.id, s]));
+    bar.classList.add('grouped');
+    bar.innerHTML = C.groups.map((g) => {
+      const list = g.ids.filter((id) => byId[id]);
+      return '<div class="a-group" style="flex:' + list.length + ' 1 0"><div class="a-glabel">' + g.name + '</div><div class="a-gtabs" style="--n:' + list.length + '">' + list.map((id) => tabBtn(byId[id])).join('') + '</div></div>';
+    }).join('');
+  } else bar.innerHTML = sections.map(tabBtn).join('');
+
+  // 分頁列留在原位；捲過之後頂端滑進精簡分頁列（只有名稱，position: fixed），捲回來時再滑出去
   const header = document.querySelector('.wrap > header');
   header.after(bar);
   const sentinel = document.createElement('div');
@@ -888,12 +1003,14 @@ const G = {"rarities":[{"id":"normal","label":"普通","color":"#e8e2d4","affixe
   const fixed = document.createElement('nav');
   fixed.className = 'a-fixed';
   fixed.setAttribute('aria-label', '分頁');
-  fixed.innerHTML = '<div class="a-fixed-in">' + sections.map((s) => '<button class="a-tab" data-id="' + s.id + '">' + bar.querySelector('[data-id="' + s.id + '"] span').outerHTML + '</button>').join('') + '<button type="button" class="a-more">切換 ▾</button></div>';
+  fixed.style.setProperty('--n', sections.length);
+  fixed.innerHTML = '<div class="a-fixed-in">' + sections.map((s) => '<button class="a-tab" data-id="' + s.id + '"><span>' + nameOf(s) + '</span></button>').join('') + '<button type="button" class="a-more">切換 ▾</button></div>';
   document.body.append(fixed);
   const more = fixed.querySelector('.a-more');
   const closeMore = () => { fixed.classList.remove('open'); more.textContent = '切換 ▾'; };
   more.addEventListener('click', () => { const o = fixed.classList.toggle('open'); more.textContent = o ? '收起 ▴' : '切換 ▾'; });
   new IntersectionObserver(([e]) => { const on = !e.isIntersecting && e.boundingClientRect.top < 0; fixed.classList.toggle('on', on); if (!on) closeMore(); }).observe(sentinel);
+
   const pager = document.createElement('div');
   pager.className = 'a-pager';
   pager.innerHTML = '<button type="button" id="aPrev"></button><button type="button" id="aNext"></button>';
@@ -903,6 +1020,8 @@ const G = {"rarities":[{"id":"normal","label":"普通","color":"#e8e2d4","affixe
   function show(id, scroll) {
     if (!ids.includes(id)) id = ids[0];
     sections.forEach((s) => s.classList.toggle('a-off', s.id !== id));
+    // 分頁以外、只在某些分頁需要的區塊（例：角色成長模擬的「模擬設定」）
+    (C.alsoShow || []).forEach((x) => document.querySelectorAll(x.sel).forEach((el) => el.classList.toggle('a-off', !x.on.includes(id))));
     document.querySelectorAll('.a-tab').forEach((t) => t.setAttribute('aria-selected', String(t.dataset.id === id)));
     const i = ids.indexOf(id);
     const prev = document.getElementById('aPrev'), next = document.getElementById('aNext');
@@ -911,43 +1030,136 @@ const G = {"rarities":[{"id":"normal","label":"普通","color":"#e8e2d4","affixe
     if (i < ids.length - 1) { next.textContent = label(ids[i + 1]) + ' ›'; next.onclick = () => go(ids[i + 1]); }
     // 換頁時：已經捲過分頁列的話，捲回原本那排分頁列（完整的分頁在最上面，下面接著新的一段）
     if (scroll && fixed.classList.contains('on')) bar.scrollIntoView({ block: 'start' });
+    window.dispatchEvent(new Event('resize')); // 讓頁面裡依寬度畫的東西（圖表等）重新量
   }
-  function go(id) { closeMore();
-    if (location.hash !== '#' + id) history.pushState(null, '', '#' + id); show(id, true); }
+  function go(id) { closeMore(); if (location.hash !== '#' + id) history.pushState(null, '', '#' + id); show(id, true); }
   [bar, fixed].forEach((el) => el.addEventListener('click', (e) => { const t = e.target.closest('.a-tab'); if (t) go(t.dataset.id); }));
-  // 頁面裡連到其他段落的連結（#cores 之類）也切換分頁
+  // 頁面裡連到其他段落的連結也切換分頁
   document.addEventListener('click', (e) => { const a = e.target.closest('a[href^="#"]'); if (a && ids.includes(a.getAttribute('href').slice(1))) { e.preventDefault(); go(a.getAttribute('href').slice(1)); } });
-  // 不對讀者說明詳細的計算邏輯（設計者 2026-11-28）：公式、權重與倍率的換算、試算範例、開發紀錄藏起來（原始內容保留在檔案裡）；
-  // 規則說明與表格保留。小標題底下的內容全藏起來時，小標題也一起藏
-  const CALC = ['.formula', '#drops p.small.muted', '#tiers ul.notes', '#colorNote', '#coreNote', '#sellNote', '#rerollNote'];
+
+  // 各頁自己的整理：把介紹改寫成給玩家看的版本（改寫過的標 data-keep，下面的規則不會再藏它）
+  const rewrite = (el, text) => { if (el && !el.dataset.keep) { el.textContent = text; el.dataset.keep = '1'; } };
+  // ── 裝備圖鑑 ──
+  // 一鍵賣出的說明是規則，不算計算邏輯
+  document.querySelectorAll('#economy p').forEach((p) => { if (/^\s*商人可以一鍵賣出/.test(p.textContent)) p.dataset.keep = '1'; });
+  // 裝備基底的介紹：原文有版本與改版歷史，公開頁換成給玩家看的版本
+  const baseIntro = document.querySelector('#bases .sec-head p');
+  if (baseIntro && /v0\.\d|V1\.0|已拿掉/.test(baseIntro.textContent)) rewrite(baseIntro,
+    '武器與防具分 8 階，越高階數值越高：武器的數字是基礎傷害，防具是基礎防禦。每種武器另有內建加成（下面這一行），不隨階級變動；武器種類也決定能用哪些技能。劍、斧、弓本身沒有法術強度，可以靠「武器灌注」從法杖取得。');
+  // 遺物怎麼拿到：只說靠打怪取得，不寫各怪物的掉落率與樓層區間
+  document.querySelectorAll('#relics li').forEach((li) => {
+    if (/^\s*20 件都靠打怪掉落/.test(li.textContent) && !li.dataset.keep) { li.innerHTML = '<b>20 件都靠打怪掉落。</b>'; li.dataset.keep = '1'; }
+  });
+  // 融合試算（從角色成長模擬搬來，設計者 2026-11-28）：介紹改寫，結果裡的計算細節拿掉（結果會重畫，有變動就重新清）
+  rewrite(document.querySelector('#fusion .sec-head p'), '放 2～4 件裝備（飾品以外：武器融出攻核，防具與盾牌融出護核；四件同一類是純核，屬性多一條）與 0～2 件飾品，看按下融合前就確定的部分：核種、核階、核色、元素、條數、印記機率，以及鑲在各部位的主屬性範圍與費用。主屬性以鑲在紫裝上為準，鑲在越稀有的裝備上越強。');
+  const FUSE = [
+    [/」\s*×\s*0\.\d+/g, '」'],
+    [/[（(]每件[^（）()]*[）)]/g, ''],
+    [/，?從\s*\d+\s*條中均等抽、?不重複/g, ''],
+    [/，主屬性\s*×\s*0\.\d+/g, ''],
+    [/[（(]M\d+\s*後[^（）()]*[）)]/g, ''],
+  ];
+  const fuse = document.getElementById('fusion');
+  const cleanFuse = () => {
+    if (!fuse) return;
+    const w = document.createTreeWalker(fuse, NodeFilter.SHOW_TEXT);
+    for (let n = w.nextNode(); n; n = w.nextNode()) {
+      let t = n.textContent;
+      for (const [re, to] of FUSE) t = t.replace(re, to);
+      if (t !== n.textContent) n.textContent = t;
+    }
+  };
+  cleanFuse();
+  if (fuse) new MutationObserver(() => { clearTimeout(window.__fuse); window.__fuse = setTimeout(cleanFuse, 30); }).observe(fuse, { childList: true, subtree: true, characterData: true });
+  // ── 熔核頁的版面（設計者 2026-11-28）：照玩家的順序重排成六個小節
+  //   開頭：一句介紹＋「融合 → 鑿孔 → 鑲嵌」三步驟，下面一排小節捷徑
+  //   01 核種與融合規則（左圖示、右規則）→ 02 鑲在哪裡、效果如何 → 03 孔數、核階與核色（兩欄＋鑲嵌說明）
+  //   → 04 融合範例 → 05 武器灌注 → 06 融合試算（放在最下面）
+  // 內容由 core-codex 的腳本產生，這裡只搬動既有的元素（id 不變），重新產生頁面後照樣適用
+  const cores = document.getElementById('cores');
+  if (cores && !cores.querySelector('.a-block')) {
+    const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html) e.innerHTML = html; return e; };
+    const H = (re) => [...cores.querySelectorAll('h3')].find((h) => re.test(h.textContent.trim()));
+    // 小標題底下到下一個小標題之前的元素（不含小標題本身）
+    const after = (h) => { const r = []; if (!h) return r; for (let n = h.nextElementSibling; n && n.tagName !== 'H3' && !n.matches('.two, .a-sub, script'); n = n.nextElementSibling) r.push(n); return r; };
+    const take = (re) => { const h = H(re); const r = after(h); h?.remove(); return r; };
+    const block = (id, no, title, lead, kids) => {
+      const b = el('div', 'a-block');
+      b.id = id;
+      b.innerHTML = '<div class="a-bhead"><span class="a-no">' + no + '</span><div><h3>' + title + '</h3>' + (lead ? '<p>' + lead + '</p>' : '') + '</div></div>';
+      b.append(...kids);
+      return b;
+    };
+    const col = (label, kids) => { const c = el('div', 'a-col', '<h4>' + label + '</h4>'); c.append(...kids); return c; };
+
+    const gemRow = document.getElementById('gemRow'), rules = document.getElementById('fusionRules');
+    const rulesH = rules?.previousElementSibling?.tagName === 'H3' ? rules.previousElementSibling : null;
+    const ruleKids = [rules, ...after(rules)].filter(Boolean); rulesH?.remove();
+    const slotKids = take(/^核種 × 部位|^核種×部位|^核種/);
+    const socketKids = take(/^孔數/), tierKids = take(/^核階與核色/), drillKids = take(/^鑿孔/);
+    const exKids = take(/^融合範例/), infKids = take(/^武器灌注/);
+    const fusion = document.getElementById('fusion');
+    const simLead = fusion?.querySelector('.sec-head p')?.textContent || '';
+    fusion?.querySelector('.sec-head')?.remove();
+
+    const flow = el('ol', 'a-flow',
+      '<li><b>融合</b><span>在商人那裡把 2～4 件用不到的裝備熔成一顆熔核</span></li>' +
+      '<li><b>鑿孔</b><span>在商人的鍛造格替裝備開孔；白、藍、黃裝掉落時可能已經有孔</span></li>' +
+      '<li><b>鑲嵌</b><span>在背包拿著熔核點有空孔的裝備；右鍵取下，孔會保留</span></li>');
+    const parts = [
+      ['cFuse', '核種與融合規則'], ['cSlot', '鑲在哪裡、效果如何'], ['cSocket', '孔數、核階與核色'],
+      ['cExample', '融合範例'], ['cInfuse', '武器灌注'], ['cSim', '融合試算'],
+    ];
+    const nav = el('nav', 'a-subnav', parts.map(([id, t], i) => '<a href="#' + id + '"><b>0' + (i + 1) + '</b>' + t + '</a>').join(''));
+    // 捷徑只捲動到小節，不換網址（網址的 # 是分頁）
+    nav.addEventListener('click', (e) => { const a = e.target.closest('a'); if (!a) return; e.preventDefault(); e.stopPropagation(); document.getElementById(a.getAttribute('href').slice(1))?.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+
+    const pair = el('div', 'a-cols a-gemrules');
+    pair.append(col('核種與核階', [gemRow].filter(Boolean)), col('融合規則', ruleKids));
+    const socketCols = el('div', 'a-cols');
+    socketCols.append(col('孔數與熔核倍率', socketKids), col('核階與核色', tierKids));
+    // 武器灌注：說明在左、繼承率表在右（三欄的小表不必拉滿整頁）
+    const infCols = el('div', 'a-cols');
+    infCols.append(col('怎麼灌注', infKids.filter((x) => !x.matches('.tbl'))), col('純核組合與繼承率', infKids.filter((x) => x.matches('.tbl'))));
+    const callout = el('div', 'a-callout', '<h4>鑿孔、鑲嵌、取下</h4>');
+    callout.append(...drillKids);
+
+    const blocks = [
+      block('cFuse', '01', '核種與融合規則', '武器融出攻核，防具與盾牌融出護核。外框顏色是核色，寶石顏色是核種，核階越高切工越細。', [pair]),
+      block('cSlot', '02', '鑲在哪裡、效果如何', '同一顆熔核鑲在不同部位，效果不同。表中是 T1 的數值範圍，同一格有兩條時隨機出現其中一條。', slotKids),
+      block('cSocket', '03', '孔數、核階與核色', '', [socketCols, callout]),
+      block('cExample', '04', '融合範例', '幾組常見的投入，以及融合後確定的結果與費用。', exKids),
+      block('cInfuse', '05', '武器灌注', '近戰與弓手也能放有威力的法術：把法杖的法術強度灌進劍、斧、弓。', [infCols]),
+      block('cSim', '06', '融合試算', simLead, fusion ? [fusion] : []),
+    ];
+    const head = cores.querySelector('.sec-head');
+    head.after(flow, nav, ...blocks);
+    cores.querySelector(':scope > .two')?.remove();
+    cores.querySelectorAll(':scope > .a-gemrules').forEach((x) => x.remove());
+  }
+
+
+  // 不對讀者說明詳細的計算邏輯：公式（＝ 加上 × ÷ Σ ^）、版本、開發日期、程式檔名
   const hideCalc = () => {
-    document.querySelectorAll(CALC.join(',')).forEach((e) => e.classList.add('a-calc'));
-    // 段落開頭的介紹、可以鑲的部位、一鍵賣出的說明是規則，不算計算邏輯
-    const KEEP = (e) => e.closest('.sec-head') || e.id === 'socketNote' || /^\s*商人可以一鍵賣出/.test(e.textContent);
-    document.querySelectorAll('.wrap > section p, .wrap > section li').forEach((e) => {
-      if (KEEP(e)) return;
+    document.querySelectorAll((C.calc || []).join(',') || '#__none').forEach((e) => e.classList.add('a-calc'));
+    const keep = (e) => e.dataset.keep || e.closest('[data-keep]') || (C.keep || []).some((sel) => e.matches(sel) || e.closest(sel));
+    document.querySelectorAll('.wrap p, .wrap li').forEach((e) => {
+      if (keep(e) || e.closest('.a-hero')) return;
       const t = e.textContent;
-      if ((/[=＝]/.test(t) && /[×÷Σ]/.test(t)) || /設計者 20\d\d|^\s*v0\.\d|^\s*金幣尺度|累積取得機率|\.ts[）)；]|src\//.test(t)) e.classList.add('a-calc');
+      if ((/[=＝]/.test(t) && /[×÷Σ^]/.test(t)) || /設計者 20\d\d|^\s*v0\.\d|^\s*金幣尺度|累積取得機率|\.ts[）)；]|src\//.test(t)) e.classList.add('a-calc');
     });
-    // 開發註記不給讀者看：「（商人「灌注」分頁，設計者 2026-11-21）」這類括號整段拿掉
+    // 開發註記：「（……設計者 2026-11-21……）」「（v0.4.0 ……）」「（2026-11-21）」這類括號整段拿掉
     const walker = document.createTreeWalker(document.querySelector('.wrap'), NodeFilter.SHOW_TEXT);
     for (let n = walker.nextNode(); n; n = walker.nextNode()) {
       if (n.parentElement.closest('script, style')) continue;
-      const t = n.textContent.replace(/[（(][^（）()]*(設計者|20\d\d-\d\d-\d\d)[^（）()]*[）)]/g, '');
+      const t = n.textContent.replace(/[（(][^（）()]*(設計者|20\d\d-\d\d-\d\d|v\d+\.\d+\.\d+|V\d\.\d)[^（）()]*[）)]/g, '');
       if (t !== n.textContent) n.textContent = t;
     }
-    // 小標題括號裡的計算細節也拿掉（「由遊戲的融合判定算出」「同一格兩條時擲骰選一條」）
+    // 小標題括號裡的計算細節也拿掉
     document.querySelectorAll('.wrap > section h3').forEach((h) => {
       for (const n of h.childNodes) if (n.nodeType === 3) n.textContent = n.textContent.replace(/[（(][^（）()]*(算出|判定|擲骰|範圍)[^（）()]*[）)]/g, '');
     });
-    // 裝備基底的介紹：原文有版本與改版歷史（v0.4.0、V1.0、已拿掉的加減分），公開頁換成給玩家看的版本
-    const baseIntro = document.querySelector('#bases .sec-head p');
-    if (baseIntro && /v0\.\d|V1\.0|已拿掉/.test(baseIntro.textContent)) baseIntro.textContent =
-      '武器與防具分 8 階，越高階數值越高：武器的數字是基礎傷害，防具是基礎防禦。每種武器另有內建加成（下面這一行），不隨階級變動；武器種類也決定能用哪些技能。劍、斧、弓本身沒有法術強度，可以靠「武器灌注」從法杖取得。';
-    // 遺物怎麼拿到：只說靠打怪取得，不寫各怪物的掉落率與樓層區間（設計者 2026-11-28）
-    document.querySelectorAll('#relics li').forEach((li) => {
-      if (/^\s*20 件都靠打怪掉落/.test(li.textContent) && !li.dataset.short) { li.dataset.short = '1'; li.innerHTML = '<b>20 件都靠打怪掉落。</b>'; }
-    });
+    // 小標題底下的內容全藏起來時，小標題也一起藏
     document.querySelectorAll('.wrap > section h3').forEach((h) => {
       const sib = [];
       for (let n = h.nextElementSibling; n && n.tagName !== 'H3'; n = n.nextElementSibling) sib.push(n);
@@ -955,7 +1167,8 @@ const G = {"rarities":[{"id":"normal","label":"普通","color":"#e8e2d4","affixe
     });
   };
   hideCalc();
-  // 手機的卡片表格：每一格加上欄名（data-label）；第一欄當卡片標題。表格會被篩選重畫，所以有變動就重新標
+
+  // 手機的卡片表格：每一格加上欄名（data-label）；第一欄當卡片標題。表格會被重畫，有變動就重新標
   const labelCells = (table) => {
     const head = table.tHead ? table.tHead.rows[table.tHead.rows.length - 1] : null;
     if (!head) return;
@@ -970,7 +1183,7 @@ const G = {"rarities":[{"id":"normal","label":"普通","color":"#e8e2d4","affixe
       });
     }
   };
-  const labelAll = () => document.querySelectorAll(".tbl table").forEach(labelCells);
+  const labelAll = () => document.querySelectorAll('.tbl table').forEach(labelCells);
   labelAll();
   new MutationObserver(() => { clearTimeout(window.__lbl); window.__lbl = setTimeout(labelAll, 50); }).observe(document.querySelector('.wrap'), { childList: true, subtree: true });
   addEventListener('popstate', () => show(location.hash.slice(1), false));
@@ -978,4 +1191,109 @@ const G = {"rarities":[{"id":"normal","label":"普通","color":"#e8e2d4","affixe
   if (location.hash) requestAnimationFrame(() => bar.scrollIntoView({ block: 'start' }));
 })();
 </script>
+<!-- fusion-js:start -->
+<script src="sim.js"></script>
+<style>
+.fuse-inputs, .fuse-jewels { display: grid; gap: 8px; }
+.fuse-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.fuse-row select, .fuse-row input { max-width: 100%; }
+.fuse-row input[type=number] { width: 4.5em; }
+.fuse-head { display: flex; gap: 12px; align-items: center; }
+.fuse-head img { width: 64px; height: 64px; flex: none; }
+.fuse-head b { font-size: 18px; }
+.fuse-list { margin: 0; padding-left: 1.2em; display: grid; gap: 3px; font-size: 14px; }
+.fuse-warn { color: var(--bad, #b5462f); }
+</style>
+<script>
+// ── 融合試算（v0.5.0）──
+(function () {
+  if (!window.Sim || !window.Sim.fusionPreview) return;
+  const S = window.Sim;
+  const $ = (id) => document.getElementById(id);
+  const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const W = [['', '（不放）'], ['sword', '劍'], ['axe', '斧'], ['bow', '弓'], ['staff', '法杖'], ['helmet', '頭盔'], ['armor', '盔甲'], ['gloves', '手套'], ['boots', '鞋子'], ['shield', '盾牌']];
+  const R = [['normal', '白'], ['magic', '藍'], ['rare', '黃'], ['epic', '紫'], ['legendary', '橘'], ['mythic', '紅']];
+  const E = [['', '無元素詞綴'], ['fire', '火焰詞綴'], ['cold', '冰寒詞綴'], ['lightning', '閃電詞綴']];
+  const ER = [['', '無抗性詞綴'], ['fire', '抗火詞綴'], ['cold', '抗寒詞綴'], ['lightning', '絕緣詞綴']];
+  const RN = Object.fromEntries(R);
+  const opt = (list, v) => list.map(([k, l]) => `<option value="${k}"${k === v ? ' selected' : ''}>${l}</option>`).join('');
+  // 預設：SPEC §2.4 的例子
+  const state = {
+    inputs: [
+      { kind: 'sword', rarity: 'rare', itemLevel: 12 },
+      { kind: 'axe', rarity: 'magic', itemLevel: 12 },
+      { kind: 'axe', rarity: 'legendary', itemLevel: 18, legendaryId: 'legendary.mountain_splitter' },
+      { kind: 'staff', rarity: 'normal', itemLevel: 1 },
+    ],
+    jewelry: ['rare', ''],
+  };
+  function drawInputs() {
+    $('fuseInputs').innerHTML = state.inputs.map((x, i) => {
+      const uniques = S.uniqueWeapons.filter((u) => u.kind === x.kind && u.rarity === x.rarity);
+      const showUnique = x.kind && uniques.length && (x.rarity === 'legendary' || x.rarity === 'mythic');
+      return `<div class="fuse-row">
+        <select data-i="${i}" data-k="kind" aria-label="第 ${i + 1} 件裝備">${opt(W, x.kind || '')}</select>
+        <select data-i="${i}" data-k="rarity" aria-label="稀有度"${x.kind ? '' : ' disabled'}>${opt(R, x.rarity)}</select>
+        <label class="small">Lv <input type="number" min="1" max="70" data-i="${i}" data-k="itemLevel" value="${x.itemLevel}"${x.kind ? '' : ' disabled'}></label>
+        ${showUnique ? `<select data-i="${i}" data-k="legendaryId" aria-label="設計">${opt(uniques.map((u) => [u.id, u.name]), x.legendaryId)}</select>` : ''}
+        ${x.kind === 'staff' ? `<select data-i="${i}" data-k="element" aria-label="元素詞綴">${opt(E, x.element || '')}</select>` : ''}
+        ${x.kind === 'helmet' ? `<select data-i="${i}" data-k="element" aria-label="抗性詞綴">${opt(ER, x.element || '')}</select>` : ''}
+      </div>`;
+    }).join('');
+    $('fuseJewels').innerHTML = state.jewelry.map((r, i) => `<div class="fuse-row"><select data-j="${i}" aria-label="第 ${i + 1} 件飾品">${opt([['', '（不放）'], ...R.slice(1)], r)}</select></div>`).join('');
+  }
+  function drawResult() {
+    const inputs = state.inputs.filter((x) => x.kind).map((x) => {
+      const o = { kind: x.kind, rarity: x.rarity, itemLevel: Number(x.itemLevel) || 1 };
+      if ((x.rarity === 'legendary' || x.rarity === 'mythic') && x.legendaryId) o.legendaryId = x.legendaryId;
+      if ((x.kind === 'staff' || x.kind === 'helmet') && x.element) o.element = x.element;
+      return o;
+    });
+    const jewelry = state.jewelry.filter(Boolean);
+    const pv = S.fusionPreview(inputs, jewelry);
+    const box = $('fuseResult');
+    if (pv.problems.length || !pv.types.length) {
+      box.innerHTML = `<b>還不能融合</b><ul class="fuse-list">${pv.problems.map((p) => `<li>${esc(p)}</li>`).join('')}</ul>`;
+      return;
+    }
+    const name = pv.mixed ? `混核（${pv.typeNames.map((n) => n.replace('核', '')).join('＋')}）` : pv.typeNames[0];
+    const votes = Object.entries(pv.votes).map(([w, n]) => `${Object.fromEntries(W)[w]} ${n}`).join('、');
+    const slotNames = { weapon: '武器', helmet: '頭盔', armor: '衣裝', gloves: '手套', boots: '鞋子', shield: '盾牌' };
+    const pct = (v) => `${Math.round(v * 100)}%`;
+    box.innerHTML = `
+      <div class="fuse-head">${pv.icon ? `<img src="${pv.icon}" alt="">` : ''}<div><b>${esc(name)}${pv.elementLabel ? `（${pv.elementLabel}）` : pv.hasElement ? '（元素隨機）' : ''}</b><div class="small muted">${RN[pv.rarity]}核 · T${pv.tier} · ${pv.lineCount} 條${pv.pure ? ' · 純核' : ''}</div></div></div>
+      <ul class="fuse-list">
+        <li>核種：${esc(votes)}${pv.mixed ? '（平手 → 混核，主屬性 ×0.7）' : ''}</li>
+        <li>核階：平均物品等級 ${Math.round(pv.avgItemLevel * 10) / 10}</li>
+        <li>核色：權重 ${pv.weight}${pv.next ? `，距${RN[pv.next.rarity]}還差 ${pv.next.gap}` : ''}</li>
+        <li>印記：${pv.brandLines.length ? `${pct(pv.brand.chance)}（每件橘裝 ${pct(pv.brand.baseChance)}${pv.brand.jewelryBoost ? ` ＋ 飾品 ${pct(pv.brand.jewelryBoost)}` : ''}${pv.brand.capped ? '，已達上限' : ''}）` : '沒有（要投入橘色裝備）'}</li>
+        ${pv.brandLines.map((b) => `<li class="small">可能印記：${esc(b.name)}「${esc(b.text)}」× 0.7</li>`).join('')}
+      </ul>
+      <div class="tbl"><table><thead><tr><th>鑲在</th><th>主屬性範圍（紫裝）</th></tr></thead><tbody>${pv.slotLines.map((s) => `<tr><td class="rowh">${slotNames[s.slot]}</td><td class="small">${s.lines.map(esc).join('<br>＋ ')}</td></tr>`).join('')}</tbody></table></div>
+      <p class="small muted">副屬性（${pv.lineCount - 1} 條，從 ${pv.secondaryLines.length} 條中均等抽、不重複）：${pv.secondaryLines.map(esc).join('、')}</p>
+      ${pv.warnings.length ? `<ul class="fuse-list fuse-warn">${pv.warnings.map((w) => `<li>⚠ ${esc(w)}</li>`).join('')}</ul>` : ''}
+      <p><b>費用</b>：金幣 ${pv.cost.gold.toLocaleString()}${pv.cost.materials.weaponEssence ? `・武器精華 ${pv.cost.materials.weaponEssence}` : ''}${pv.cost.materials.armorEssence ? `・防具精華 ${pv.cost.materials.armorEssence}` : ''}</p>`;
+  }
+  function onChange(e) {
+    const t = e.target;
+    if (t.dataset.j !== undefined) state.jewelry[Number(t.dataset.j)] = t.value;
+    else if (t.dataset.i !== undefined) {
+      const x = state.inputs[Number(t.dataset.i)];
+      x[t.dataset.k] = t.dataset.k === 'itemLevel' ? Number(t.value) : t.value;
+      if (t.dataset.k === 'kind' || t.dataset.k === 'rarity') {
+        const first = S.uniqueWeapons.find((u) => u.kind === x.kind && u.rarity === x.rarity);
+        x.legendaryId = first ? first.id : '';
+        drawInputs();
+      }
+    }
+    drawResult();
+  }
+  $('fuseInputs').addEventListener('change', onChange);
+  $('fuseInputs').addEventListener('input', (e) => { if (e.target.dataset.k === 'itemLevel') onChange(e); });
+  $('fuseJewels').addEventListener('change', onChange);
+  drawInputs();
+  drawResult();
+})();
+</script>
+<!-- fusion-js:end -->
 </body></html>
